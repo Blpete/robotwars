@@ -1,0 +1,19 @@
+.controlpanel {
+  background-color: black;
+  width: 500px;
+}
+
+.resourebtn {
+  margin-top:5px;
+  margin-bottom: 5px;
+  margin-left: 5px;
+  padding-left: 2px;
+  padding-top: 2px;
+  scroll-padding-bottom: 2px;
+  padding-right: 2px;
+  background-color: purple;
+  color: white;
+  height: 30px;
+  width: 90px;
+  font-size: large;
+}

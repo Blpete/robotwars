@@ -1,0 +1,13 @@
+.label {
+  margin-top: 5px;
+  margin-bottom: 5px;
+  margin-left: 5px;
+
+}
+
+.dashboard {
+    background-color: tan;
+    font-size: medium;
+    font-weight: bold;
+    width: 500px;
+}
