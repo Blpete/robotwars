@@ -7,12 +7,14 @@ import { ControlsComponent } from './controls/controls.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { GameboardService } from './gameboard.service';
 import { PhaserModule } from 'phaser-component-library';
+import { HomepageComponent } from './homepage/homepage.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     ControlsComponent,
-    DashboardComponent
+    DashboardComponent,
+    HomepageComponent
   ],
   imports: [
     PhaserModule,

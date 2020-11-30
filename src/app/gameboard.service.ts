@@ -32,11 +32,13 @@ export class GameboardService extends Phaser.Scene {
     const sourceTileY = this.map.tileToWorldY(this.currentLoc.y);
     console.log('addNewResource', kind, sourceTileX, sourceTileY);
     console.log('take2', this.currentLoc.x, this.currentLoc.y);
-    const entity = this.physics.add.sprite(sourceTileX, sourceTileY, 'guy');
+
+    const entity = this.physics.add.sprite(sourceTileX, sourceTileY, kind.toString());
     entity.setBounce(0.2);
     entity.setCollideWorldBounds(true);
-    entity.setVelocityX(Math.random()*10);
-    entity.setVelocityY(Math.random()*10);
+    entity.setVelocityX(Math.random() * 10.0);
+    entity.setVelocityY(Math.random() * 10.0);
+
   }
 
   public setCurrentCoordinate(coord: Coordinate): void {
@@ -63,7 +65,7 @@ export class GameboardService extends Phaser.Scene {
 
   public create(): void {
     console.log('SCENE Create');
-  
+
     this.map = this.make.tilemap({ key: 'map' });
     const tiles = this.map.addTilesetImage('Desert', 'tiles');
     const layer = this.map.createDynamicLayer('Ground', tiles, 0, 0);
@@ -106,6 +108,11 @@ export class GameboardService extends Phaser.Scene {
     this.load.image('tiles', 'assets/tilemaps/tiles/tmw_desert_spacing.png');
     this.load.tilemapTiledJSON('map', 'assets/tilemaps/maps/desert.json');
     this.load.image('guy', 'assets/sprites/asteroids_ship.png');
+    this.load.image('base', 'assets/sprites/steelbox.png');
+    this.load.image('attacker', 'assets/sprites/xenon2_ship.png');
+    this.load.image('defender', 'assets/sprites/advanced_wars_tank.png');
+    this.load.image('miner', 'assets/sprites/xenon2_ship.png');
+    this.load.image('loader', 'assets/sprites/blue_ball.png');
   }
 
   public update(time, delta): void {
@@ -144,5 +151,5 @@ export class Coordinate {
   y: number;
 }
 export enum EntityType {
-  Loader, Miner, Attacker, Defender, Builder
+  Loader = 'loader', Miner = 'miner', Attacker = 'attacker', Defender = 'defender', Builder = 'base'
 }
