@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { GameboardService } from './gameboard.service';
+import Phaser from 'phaser';
 
 @Component({
   selector: 'app-root',
@@ -18,17 +19,17 @@ export class AppComponent {
     title: 'Robot Wars',
     version: '1.0.0',
     type: Phaser.AUTO,
-    height: 480,
-    width: 600,
+    height: window.innerHeight,
+    width: window.innerWidth,
     backgroundColor: '#2d2d2d',
     //  scene: [MainScene],
     //  parent: 'gameContainer',
-    // physics: {
-    //   default: 'arcade',
-    //   arcade: {
-    //     gravity: { y: 100 }
-    //   }
-    // },
+    physics: {
+      default: 'arcade',
+      arcade: {
+
+      }
+    },
   };
   public constructor(public gameService: GameboardService) { }
 
