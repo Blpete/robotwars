@@ -15,6 +15,8 @@ export class GameboardService extends Phaser.Scene {
   private sourceMarker: any;
   private destinationMarker: any;
   private map: any;
+  private sprites: EntityClass[] = [];
+
 
   constructor() {
     super({ key: 'Scene' });
@@ -38,6 +40,14 @@ export class GameboardService extends Phaser.Scene {
     entity.setCollideWorldBounds(true);
     entity.setVelocityX(Math.random() * 10.0);
     entity.setVelocityY(Math.random() * 10.0);
+
+
+    let obj: EntityClass = new EntityClass();
+    obj.sprite = entity;
+    obj.angle = Math.random() * 360;
+    obj.distance = Math.random() * 150;
+    obj.baseloc = { x: sourceTileX, y: sourceTileY };
+    this.sprites.push(obj);
 
   }
 
@@ -143,6 +153,20 @@ export class GameboardService extends Phaser.Scene {
       // this.map.copy(sourceTileX, sourceTileY, 6, 6, destinationTileX, destinationTileY);
     }
 
+    for (let i = 0; i < this.sprites.length; i++) {
+      let value = this.sprites[i];
+      value.sprite.setPosition(value.baseloc.x, value.baseloc.y);
+      Phaser.Math.RotateAroundDistance(value.sprite, value.sprite.x, value.sprite.y, value.angle, value.distance);
+      value.angle = value.angle + 0.01;
+      this.sprites[i] = value;
+    }
+
+    // this.sprites.forEach(value => {
+    //   value.sprite.setPosition(value.baseloc.x, value.baseloc.y);
+    //   Phaser.Math.RotateAroundDistance(value.sprite, value.sprite.x, value.sprite.y, this.angle, value.distance);
+    //   value.angle = value.angle + 0.01;
+
+    // });
   }
 }
 
@@ -152,4 +176,11 @@ export class Coordinate {
 }
 export enum EntityType {
   Loader = 'loader', Miner = 'miner', Attacker = 'attacker', Defender = 'defender', Builder = 'base'
+}
+
+export class EntityClass {
+  sprite: any;
+  angle: number;
+  distance: number;
+  baseloc: Coordinate;
 }
