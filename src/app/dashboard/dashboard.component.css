@@ -2,12 +2,44 @@
   margin-top: 5px;
   margin-bottom: 5px;
   margin-left: 5px;
-
+  text-align: right;
+  font-weight: bold;
 }
 
+.val {
+  margin-top: 5px;
+  margin-bottom: 5px;
+  margin-left: 5px;
+  text-align: left;
+
+}
 .dashboard {
     background-color: tan;
     font-size: medium;
-    font-weight: bold;
-    width: 500px;
+}
+
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.column {
+  float: left;
+  width: 33%;
+}
+
+/* Responsive layout - when the screen is less than 400px wide, make the two columns stack on top of each other instead of next to each other */
+@media screen and (max-width: 400px) {
+  .column {
+    width: 100%;
+
+  }
+
+  .controlbtn {
+    background: black;
+    color: white;
+    align-items:center;
+  }
 }

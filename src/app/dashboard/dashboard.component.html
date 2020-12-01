@@ -1,9 +1,36 @@
 <div class="dashboard">
-    <label class="label">Score: {{score}}</label>
-    <br/>
-    <label class="label">Robots: {{robots}}</label>
-    <br/>
-    <label class="label">ElapsedTime: {{simTime}}</label>
-    <br/>
-    <label class="label">FPS: {{frameRate}}</label>
+    <div class="row">
+        <div class="column">
+            <label class="label">Score:</label>
+            <label class="val">{{score}}</label>
+            <br />
+            <label class="label">Energy:</label>
+            <label class="val">{{energy}}</label>
+            <br />
+            <label class="label">Resources:</label>
+            <label class="val">{{resources}}</label>
+            <br />
+        </div>
+
+        <div class="column">
+            <label class="label">ElapsedTime:</label>
+            <label class="val">{{simTime}}</label>
+            <br />
+            <label class="label">FPS:</label>
+            <label class="val">{{frameRate}}</label>
+            <br />
+            <label class="label">Robots:</label>
+            <label class="val">{{robots}}</label>
+        </div>
+
+        <div class="column">
+            <button class="controlbtn" (click)="pause()">Pause</button>
+            <br />
+            <button class="controlbtn" (click)="exit()">Exit</button>
+            <br />
+
+        </div>
+    </div>
+
+
 </div>

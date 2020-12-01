@@ -42,7 +42,7 @@ export class GameboardService extends Phaser.Scene {
     entity.setVelocityY(Math.random() * 10.0);
 
 
-    let obj: EntityClass = new EntityClass();
+    const obj: EntityClass = new EntityClass();
     obj.sprite = entity;
     obj.angle = Math.random() * 360;
     obj.distance = Math.random() * 150;
@@ -154,7 +154,7 @@ export class GameboardService extends Phaser.Scene {
     }
 
     for (let i = 0; i < this.sprites.length; i++) {
-      let value = this.sprites[i];
+      const value = this.sprites[i];
       value.sprite.setPosition(value.baseloc.x, value.baseloc.y);
       Phaser.Math.RotateAroundDistance(value.sprite, value.sprite.x, value.sprite.y, value.angle, value.distance);
       value.angle = value.angle + 0.01;

@@ -17,3 +17,7 @@
   width: 90px;
   font-size: large;
 }
+
+* {
+  touch-action: manipulation;
+}
