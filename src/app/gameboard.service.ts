@@ -1,5 +1,11 @@
 import { Injectable } from '@angular/core';
 import Phaser from 'phaser';
+import { BaseManager } from './basemanager';
+import { EntityBehaviors } from './enitybehaviours';
+import { GameConstants } from './gameconstants';
+import { Coordinate, EntityClass, EntityType } from './gameTypes';
+
+const SCENE_KEY = 'Scene';
 
 @Injectable({
   providedIn: 'root'
@@ -10,21 +16,36 @@ export class GameboardService extends Phaser.Scene {
   robotCount: number;
   currentLoc: Coordinate;
   frameCount: number;
+  baseManager: BaseManager;
 
   private controls: any;
   private sourceMarker: any;
   private destinationMarker: any;
-  private map: any;
+  map: any;
   private sprites: EntityClass[] = [];
+  // tslint:disable-next-line: no-inferrable-types
+  private paused: boolean = false;
 
+  // chests
+  chests;
 
   constructor() {
-    super({ key: 'Scene' });
+    super({ key: SCENE_KEY });
     this.currentLoc = { x: 0, y: 10 };
     this.robotCount = 0;
     this.frameCount = 0;
+    this.baseManager = new BaseManager();
   }
 
+  public pauseGame(): void {
+    this.paused = true;
+    this.game.scene.pause(SCENE_KEY);
+  }
+
+  public resumeGame(): void {
+    this.paused = false;
+    this.game.scene.resume(SCENE_KEY);
+  }
 
   public newResource(kind: EntityType): void {
 
@@ -33,7 +54,6 @@ export class GameboardService extends Phaser.Scene {
     const sourceTileX = this.map.tileToWorldX(this.currentLoc.x);
     const sourceTileY = this.map.tileToWorldY(this.currentLoc.y);
     console.log('addNewResource', kind, sourceTileX, sourceTileY);
-    console.log('take2', this.currentLoc.x, this.currentLoc.y);
 
     const entity = this.physics.add.sprite(sourceTileX, sourceTileY, kind.toString());
     entity.setBounce(0.2);
@@ -43,6 +63,7 @@ export class GameboardService extends Phaser.Scene {
 
 
     const obj: EntityClass = new EntityClass();
+    obj.entityKind = kind;
     obj.sprite = entity;
     obj.angle = Math.random() * 360;
     obj.distance = Math.random() * 150;
@@ -76,6 +97,8 @@ export class GameboardService extends Phaser.Scene {
   public create(): void {
     console.log('SCENE Create');
 
+
+
     this.map = this.make.tilemap({ key: 'map' });
     const tiles = this.map.addTilesetImage('Desert', 'tiles');
     const layer = this.map.createDynamicLayer('Ground', tiles, 0, 0);
@@ -102,13 +125,30 @@ export class GameboardService extends Phaser.Scene {
     };
     this.controls = new Phaser.Cameras.Controls.FixedKeyControl(controlConfig);
 
-    const help = this.add.text(16, 16, 'Left-click to copy the tiles in the\nwhite rectangle to the black rectangle.', {
+    const help = this.add.text(16, 16, 'Wave 1', {
       fontSize: '18px',
       padding: { x: 10, y: 5 },
       backgroundColor: '#000000',
       fill: '#ffffff'
     });
     help.setScrollFactor(0);
+
+    this.physics.world.step(0);
+
+    // create bases
+    this.baseManager.addBase(1, { x: 5, y: 8 }, this);
+    this.baseManager.addBase(2, { x: 13, y: 2 }, this);
+    this.baseManager.addBase(3, { x: 10, y: 10 }, this);
+
+
+    //  create chests
+    this.chests = this.make.group( { key: 'chest', frameQuantity: 10 });
+    const rect = new Phaser.Geom.Rectangle(0, 0, GameConstants.width, GameConstants.height);
+    Phaser.Actions.RandomRectangle(this.chests.getChildren(), rect);
+    this.chests = this.physics.add.group();
+    // for (let i = 0; i < 10; i++) {
+    //   this.chests.create(Math.random() * 400, Math.random() * 400, 'chest');
+    // }
   }
 
 
@@ -118,11 +158,14 @@ export class GameboardService extends Phaser.Scene {
     this.load.image('tiles', 'assets/tilemaps/tiles/tmw_desert_spacing.png');
     this.load.tilemapTiledJSON('map', 'assets/tilemaps/maps/desert.json');
     this.load.image('guy', 'assets/sprites/asteroids_ship.png');
-    this.load.image('base', 'assets/sprites/steelbox.png');
+    this.load.image('builder', 'assets/sprites/asteroids_ship.png');
+    this.load.image('base', 'assets/sprites/blockb.png');
     this.load.image('attacker', 'assets/sprites/xenon2_ship.png');
     this.load.image('defender', 'assets/sprites/advanced_wars_tank.png');
     this.load.image('miner', 'assets/sprites/xenon2_ship.png');
     this.load.image('loader', 'assets/sprites/blue_ball.png');
+    this.load.image('base-highlight', 'assets/sprites/blockBNM.png');
+    this.load.image('chest', 'assets/sprites/carrot.png');
   }
 
   public update(time, delta): void {
@@ -147,6 +190,7 @@ export class GameboardService extends Phaser.Scene {
         console.log('click on', sourceTileX, sourceTileY);
 
         this.setCurrentCoordinate({ x: sourceTileX, y: sourceTileY });
+        this.baseManager.hightlightBase({ x: sourceTileX, y: sourceTileY });
       }
 
       // Copy a 6 x 6 area at (sourceTileX, sourceTileY) to (destinationTileX, destinationTileY)
@@ -154,11 +198,17 @@ export class GameboardService extends Phaser.Scene {
     }
 
     for (let i = 0; i < this.sprites.length; i++) {
+
       const value = this.sprites[i];
-      value.sprite.setPosition(value.baseloc.x, value.baseloc.y);
-      Phaser.Math.RotateAroundDistance(value.sprite, value.sprite.x, value.sprite.y, value.angle, value.distance);
-      value.angle = value.angle + 0.01;
-      this.sprites[i] = value;
+      this.sprites[i] = EntityBehaviors.updateEntity(value, this);
+      // value.sprite.setPosition(value.baseloc.x, value.baseloc.y);
+      // Phaser.Math.RotateAroundDistance(value.sprite, value.sprite.x, value.sprite.y, value.angle, value.distance);
+      // value.angle = value.angle + 0.01;
+      // if (value.angle > 360.0) {
+      //   value.angle = value.angle - 360.0;
+      // }
+      // value.sprite.angle = value.angle;
+      // this.sprites[i] = value;
     }
 
     // this.sprites.forEach(value => {
@@ -170,17 +220,4 @@ export class GameboardService extends Phaser.Scene {
   }
 }
 
-export class Coordinate {
-  x: number;
-  y: number;
-}
-export enum EntityType {
-  Loader = 'loader', Miner = 'miner', Attacker = 'attacker', Defender = 'defender', Builder = 'base'
-}
 
-export class EntityClass {
-  sprite: any;
-  angle: number;
-  distance: number;
-  baseloc: Coordinate;
-}

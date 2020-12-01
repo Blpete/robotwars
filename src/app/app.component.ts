@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { GameboardService } from './gameboard.service';
 import Phaser from 'phaser';
+import { GameConstants } from './gameconstants';
 
 @Component({
   selector: 'app-root',
@@ -19,8 +20,8 @@ export class AppComponent {
     title: 'Robot Wars',
     version: '1.0.0',
     type: Phaser.AUTO,
-    height: window.innerHeight,
-    width: window.innerWidth,
+    height: GameConstants.height,
+    width: GameConstants.width,
     backgroundColor: '#2d2d2d',
     //  scene: [MainScene],
     //  parent: 'gameContainer',

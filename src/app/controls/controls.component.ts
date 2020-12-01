@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { EntityType, GameboardService } from '../gameboard.service';
+import { GameboardService } from '../gameboard.service';
+import { EntityType } from '../gameTypes';
+
 
 @Component({
   selector: 'app-controls',

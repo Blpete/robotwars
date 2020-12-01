@@ -15,6 +15,7 @@ export class DashboardComponent implements OnInit {
   frameRate: number;
   energy: number;
   resources: number;
+  paused: boolean = false;
 
   constructor(public gameService: GameboardService) { }
 
@@ -40,7 +41,14 @@ export class DashboardComponent implements OnInit {
   }
 
   pause(): void {
-    console.log('pause clicked');
+    console.log('pause clicked', this.paused);
+    if (!this.paused) {
+      this.gameService.pauseGame();
+      this.paused = true;
+    } else {
+      this.gameService.resumeGame();
+      this.paused = false;
+    }
 
   }
 
