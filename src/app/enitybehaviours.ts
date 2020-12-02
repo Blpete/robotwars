@@ -16,13 +16,20 @@ export class EntityBehaviors {
             }
             value.sprite.angle = value.angle;
         } else if (value.entityKind === EntityType.Miner) {
-            const closest: any = gs.physics.closest(value.sprite/* , gs.chests.getChildren() */);
+            const closest: any = null; // todo gs.physics.closest(value.sprite , gs.chests.getChildren());
             // const closest = gs.chests;
             if (closest) {
                 // console.log('closest', closest.world.x, closest.world.y);
                 const x = 400; // closest.world.x,
                 const y = 400; // closest.world.y,
                 gs.physics.accelerateTo(value.sprite, x, y, 10, 300, 300);
+            }
+        } else if (value.entityKind === EntityType.Attacker) {
+            if (value.timer < 600) {
+                value.timer = value.timer + 1;
+            } else {
+                value.timer = 0;
+                value.sprite.setVelocity(Phaser.Math.Between(-10, 10), Phaser.Math.Between(-10, 10));
             }
         }
         return value;

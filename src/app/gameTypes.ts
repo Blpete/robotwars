@@ -10,7 +10,7 @@ export enum EntityType {
 }
 
 export class EntityClass {
-    sprite: Phaser.GameObjects.Sprite;
+    sprite: any;
     entityKind: EntityType;
     angle: number;
     distance: number;
@@ -20,6 +20,7 @@ export class EntityClass {
     status: string;
     behaviour: string;
     level: number;
+    timer: number = 0;
 }
 
 export class Base {

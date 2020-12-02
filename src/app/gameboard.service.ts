@@ -58,8 +58,8 @@ export class GameboardService extends Phaser.Scene {
     const entity = this.physics.add.sprite(sourceTileX, sourceTileY, kind.toString());
     entity.setBounce(0.2);
     entity.setCollideWorldBounds(true);
-    entity.setVelocityX(Math.random() * 10.0);
-    entity.setVelocityY(Math.random() * 10.0);
+    entity.setVelocityX(Phaser.Math.Between(-10, 10));
+    entity.setVelocityY(Phaser.Math.Between(-10, 10));
 
 
     const obj: EntityClass = new EntityClass();
@@ -135,6 +135,11 @@ export class GameboardService extends Phaser.Scene {
 
     this.physics.world.step(0);
 
+    // stop browser default menu on right click
+    // tslint:disable-next-line: only-arrow-functions
+    // tslint:disable-next-line: typedef
+    this.game.canvas.oncontextmenu = function (e) { e.preventDefault(); };
+
     // create bases
     this.baseManager.addBase(1, { x: 5, y: 8 }, this);
     this.baseManager.addBase(2, { x: 13, y: 2 }, this);
@@ -142,13 +147,16 @@ export class GameboardService extends Phaser.Scene {
 
 
     //  create chests
-    this.chests = this.make.group( { key: 'chest', frameQuantity: 10 });
+    this.chests = this.make.group({ key: 'chest', frameQuantity: 10 });
     const rect = new Phaser.Geom.Rectangle(0, 0, GameConstants.width, GameConstants.height);
     Phaser.Actions.RandomRectangle(this.chests.getChildren(), rect);
-    this.chests = this.physics.add.group();
-    // for (let i = 0; i < 10; i++) {
-    //   this.chests.create(Math.random() * 400, Math.random() * 400, 'chest');
-    // }
+
+    this.input.on('drag', function (pointer, gameObject, dragX, dragY) {
+      gameObject.x = dragX;
+      gameObject.y = dragY;
+      console.log('drag', gameObject);
+    }
+    );
   }
 
 
@@ -185,6 +193,7 @@ export class GameboardService extends Phaser.Scene {
     this.sourceMarker.x = this.map.tileToWorldX(sourceTileX);
     this.sourceMarker.y = this.map.tileToWorldY(sourceTileY);
 
+    // button down
     if (this.input.manager.activePointer.isDown) {
       if (this.sourceMarker.y > 0) {
         console.log('click on', sourceTileX, sourceTileY);
@@ -198,17 +207,8 @@ export class GameboardService extends Phaser.Scene {
     }
 
     for (let i = 0; i < this.sprites.length; i++) {
-
       const value = this.sprites[i];
       this.sprites[i] = EntityBehaviors.updateEntity(value, this);
-      // value.sprite.setPosition(value.baseloc.x, value.baseloc.y);
-      // Phaser.Math.RotateAroundDistance(value.sprite, value.sprite.x, value.sprite.y, value.angle, value.distance);
-      // value.angle = value.angle + 0.01;
-      // if (value.angle > 360.0) {
-      //   value.angle = value.angle - 360.0;
-      // }
-      // value.sprite.angle = value.angle;
-      // this.sprites[i] = value;
     }
 
     // this.sprites.forEach(value => {
