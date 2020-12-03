@@ -37,6 +37,8 @@ export class DashboardComponent implements OnInit {
       this.simTime++;
       this.robots = this.gameService.robotCount;
       this.frameRate = this.gameService.getFrameRate();
+      this.score = this.gameService.getScore();
+      this.energy = this.gameService.getEnergy();
     });
   }
 

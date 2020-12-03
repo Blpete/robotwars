@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import Phaser from 'phaser';
+import Phaser, { LEFT } from 'phaser';
 import { BaseManager } from './basemanager';
 import { EntityBehaviors } from './enitybehaviours';
 import { GameConstants } from './gameconstants';
@@ -17,6 +17,9 @@ export class GameboardService extends Phaser.Scene {
   currentLoc: Coordinate;
   frameCount: number;
   baseManager: BaseManager;
+  public score: number;
+  energy: number;
+
 
   private controls: any;
   private sourceMarker: any;
@@ -29,12 +32,24 @@ export class GameboardService extends Phaser.Scene {
   // chests
   chests;
 
+  // bullets
+  bullets;
+  lastBulletShotAt;
+  bulletPool;
+
+  // Define constants
+   SHOT_DELAY = 100; // milliseconds (10 bullets/second)
+   BULLET_SPEED = 500; // pixels/second
+   NUMBER_OF_BULLETS = 20;
+
   constructor() {
     super({ key: SCENE_KEY });
     this.currentLoc = { x: 0, y: 10 };
     this.robotCount = 0;
     this.frameCount = 0;
+    this.energy = 0;
     this.baseManager = new BaseManager();
+    this.score = 0;
   }
 
   public pauseGame(): void {
@@ -45,6 +60,13 @@ export class GameboardService extends Phaser.Scene {
   public resumeGame(): void {
     this.paused = false;
     this.game.scene.resume(SCENE_KEY);
+  }
+
+  public getScore(): number {
+    return this.score;
+  }
+  public getEnergy(): number {
+    return this.energy;
   }
 
   public newResource(kind: EntityType): void {
@@ -73,7 +95,7 @@ export class GameboardService extends Phaser.Scene {
   }
 
   public setCurrentCoordinate(coord: Coordinate): void {
-    console.log('setCurrentCoord', coord, coord.x);
+   // console.log('setCurrentCoord', coord, coord.x);
     this.currentLoc = coord;
   }
 
@@ -90,7 +112,50 @@ export class GameboardService extends Phaser.Scene {
   }
 
 
+  public shootBullet(): void {
+    // Enforce a short delay between shots by recording
+    // the time that each bullet is shot and testing if
+    // the amount of time since the last shot is more than
+    // the required delay.
+    if (this.lastBulletShotAt === undefined) { this.lastBulletShotAt = 0; }
+    if (this.game.getTime() - this.lastBulletShotAt < this.SHOT_DELAY) { return; }
+    this.lastBulletShotAt = this.game.getTime() ;
+    console.log('shootbullet');
 
+    // Get a dead bullet from the pool
+    const bullet = this.bulletPool.getFirstDead();
+
+    // If there aren't any bullets available then don't shoot
+    if (bullet === null || bullet === undefined) { return; }
+
+    // Revive the bullet
+    // This makes the bullet "alive"
+   // bullet.revive();
+
+    // Bullets should kill themselves when they leave the world.
+    // Phaser takes care of this for me by setting this flag
+    // but you can do it yourself by killing the bullet if
+    // its x,y coordinates are outside of the world.
+    bullet.checkWorldBounds = true;
+    bullet.outOfBoundsKill = true;
+
+    // Set the bullet position to the gun position
+    const sourceTileX = this.map.tileToWorldX(this.currentLoc.x);
+    const sourceTileY = this.map.tileToWorldY(this.currentLoc.y);
+
+    bullet.x = sourceTileX;
+    bullet.y = sourceTileY;
+
+    bullet.setActive(true);
+    bullet.setVisible(true);
+    console.log('bullet', bullet);
+
+    //bullet.reset(this.gun.x, this.gun.y);
+
+    // Shoot it
+    bullet.body.velocity.x = this.BULLET_SPEED;
+    bullet.body.velocity.y = 0;
+  }
 
 
 
@@ -99,7 +164,7 @@ export class GameboardService extends Phaser.Scene {
 
 
 
-    this.map = this.make.tilemap({ key: 'map' });
+    this.map = this.make.tilemap({ key: 'map', tileWidth: 32, tileHeight: 32 });
     const tiles = this.map.addTilesetImage('Desert', 'tiles');
     const layer = this.map.createDynamicLayer('Ground', tiles, 0, 0);
 
@@ -136,9 +201,8 @@ export class GameboardService extends Phaser.Scene {
     this.physics.world.step(0);
 
     // stop browser default menu on right click
-    // tslint:disable-next-line: only-arrow-functions
-    // tslint:disable-next-line: typedef
-    this.game.canvas.oncontextmenu = function (e) { e.preventDefault(); };
+    // tslint:disable-next-line: typedef,  tslint:disable-next-line: only-arrow-functions
+    this.game.canvas.oncontextmenu = function(e) { e.preventDefault(); };
 
     // create bases
     this.baseManager.addBase(1, { x: 5, y: 8 }, this);
@@ -147,16 +211,45 @@ export class GameboardService extends Phaser.Scene {
 
 
     //  create chests
-    this.chests = this.make.group({ key: 'chest', frameQuantity: 10 });
+    this.chests = this.physics.add.group({ key: 'chest', frameQuantity: 10 });
     const rect = new Phaser.Geom.Rectangle(0, 0, GameConstants.width, GameConstants.height);
     Phaser.Actions.RandomRectangle(this.chests.getChildren(), rect);
 
-    this.input.on('drag', function (pointer, gameObject, dragX, dragY) {
+    this.input.on('drag', function(pointer, gameObject, dragX, dragY) {
       gameObject.x = dragX;
       gameObject.y = dragY;
       console.log('drag', gameObject);
+    });
+
+
+    // create bullets
+
+    // Create an object representing our gun
+    // Create an object pool of bullets
+    this.bulletPool = this.physics.add.group();
+    for (let i = 0; i < this.NUMBER_OF_BULLETS; i++) {
+      // Create each bullet and add it to the group.
+      const bullet: any  = this.add.sprite(0, 0, 'bullet');
+      this.bulletPool.add(bullet);
+
+      // Set its initial state to "dead".
+      this.bulletPool.killAndHide(bullet);
     }
-    );
+
+    let self = this;
+    this.physics.add.collider(
+      this.bulletPool,
+      this.chests,
+      function (ball, crate): void
+      {
+        //  console.log('colision', ball, crate);
+          crate.destroy();
+          self.score = self.score + 10;
+          ball.destroy();
+          console.log('colision', self.score);
+          // ball.setAlpha(0.5);
+          // crate.setAlpha(0.5);
+      });
   }
 
 
@@ -174,6 +267,7 @@ export class GameboardService extends Phaser.Scene {
     this.load.image('loader', 'assets/sprites/blue_ball.png');
     this.load.image('base-highlight', 'assets/sprites/blockBNM.png');
     this.load.image('chest', 'assets/sprites/carrot.png');
+    this.load.image('bullet','assets/sprites/bullets/bullet1.png' );
   }
 
   public update(time, delta): void {
@@ -200,16 +294,18 @@ export class GameboardService extends Phaser.Scene {
 
         this.setCurrentCoordinate({ x: sourceTileX, y: sourceTileY });
         this.baseManager.hightlightBase({ x: sourceTileX, y: sourceTileY });
+
+        // todo test
+        this.shootBullet();
       }
 
-      // Copy a 6 x 6 area at (sourceTileX, sourceTileY) to (destinationTileX, destinationTileY)
-      // this.map.copy(sourceTileX, sourceTileY, 6, 6, destinationTileX, destinationTileY);
     }
 
     for (let i = 0; i < this.sprites.length; i++) {
       const value = this.sprites[i];
       this.sprites[i] = EntityBehaviors.updateEntity(value, this);
     }
+
 
     // this.sprites.forEach(value => {
     //   value.sprite.setPosition(value.baseloc.x, value.baseloc.y);

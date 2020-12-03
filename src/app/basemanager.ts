@@ -24,7 +24,7 @@ export class BaseManager {
     }
 
     public hightlightBase(loc: Coordinate): void {
-        console.log('highlightbase', loc);
+        //console.log('highlightbase', loc);
         // dehighlight all
         for (let i = 0; i < this.bases.length; i++) {
             this.bases[i].sprite.setTexture('base');
