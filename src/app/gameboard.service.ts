@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import Phaser, { LEFT } from 'phaser';
+import { AnonymousSubject } from 'rxjs/internal/Subject';
 import { BaseManager } from './basemanager';
 import { EntityBehaviors } from './enitybehaviours';
 import { GameConstants } from './gameconstants';
@@ -33,12 +34,14 @@ export class GameboardService extends Phaser.Scene {
 
   // chests
   chests;
+  miners;
+  private basegroup: Phaser.GameObjects.Group;
 
   // bullets
   bullets;
   lastBulletShotAt;
-  bulletPool;
-  enemyWave;
+  bulletPool: Phaser.GameObjects.Group;
+  enemyWave: Phaser.GameObjects.Group;
   orePool;
   energyPool;
 
@@ -80,12 +83,14 @@ export class GameboardService extends Phaser.Scene {
   public newResource(kind: EntityType): void {
 
     this.robotCount++;
+    const base = this.baseManager.getCurrentBase();
+    // const sourceTileX = this.map.tileToWorldX(this.currentLoc.x);
+    // const sourceTileY = this.map.tileToWorldY(this.currentLoc.y);
+    console.log('addNewResource', kind, base);
 
-   // const sourceTileX = this.map.tileToWorldX(this.currentLoc.x);
-   // const sourceTileY = this.map.tileToWorldY(this.currentLoc.y);
-    console.log('addNewResource', kind, this.currentLoc.x, this.currentLoc.y);
-
-    const entity = this.physics.add.sprite(this.currentLoc.y, this.currentLoc.y, kind.toString());
+    const entity = this.physics.add.sprite(base.location.x, base.location.y, kind.toString());
+    entity.displayHeight = GameConstants.entitySize;
+    entity.displayWidth = GameConstants.entitySize;
     entity.setBounce(0.2);
     entity.setCollideWorldBounds(true);
     entity.setVelocityX(Phaser.Math.Between(-10, 10));
@@ -97,10 +102,13 @@ export class GameboardService extends Phaser.Scene {
     obj.sprite = entity;
     obj.angle = Math.random() * 360;
     obj.distance = Math.random() * 150;
-    const base = this.baseManager.getCurrentBase();
+
     obj.baseloc = { x: base.sprite.x, y: base.sprite.y };
     this.sprites.push(obj);
 
+    if (kind === EntityType.Miner) {
+      this.miners.add(entity);
+    }
   }
 
   public setCurrentCoordinate(coord: Coordinate): void {
@@ -149,15 +157,11 @@ export class GameboardService extends Phaser.Scene {
     bullet.outOfBoundsKill = true;
 
     // Set the bullet position to the gun position
-    // const sourceTileX = this.map.tileToWorldX(this.currentLoc.x);
-    // const sourceTileY = this.map.tileToWorldY(this.currentLoc.y);
-
     bullet.x = source.x;
     bullet.y = source.y;
 
     bullet.setActive(true);
     bullet.setVisible(true);
-    // console.log('bullet', bullet);
 
     let angle = 0.0;
     //  console.log('closest:', closeChest);
@@ -166,8 +170,6 @@ export class GameboardService extends Phaser.Scene {
 
     // Shoot it
     this.physics.velocityFromRotation(angle, this.BULLET_SPEED, bullet.body.velocity);
-    // bullet.body.velocity.x = this.BULLET_SPEED;
-    // bullet.body.velocity.y = 0;
   }
 
 
@@ -177,7 +179,7 @@ export class GameboardService extends Phaser.Scene {
 
     // SPACE
     //  World size is 8000 x 6000
-    this.bg = this.add.tileSprite(400, 300, 800, 600, 'background').setScrollFactor(0);
+    this.bg = this.add.tileSprite(0, 0, GameConstants.worldWidth, GameConstants.worldHeight, 'background').setScrollFactor(0);
 
     // this.map = this.make.tilemap({ key: 'map', tileWidth: 32, tileHeight: 32 });
     // const tiles = this.map.addTilesetImage('Desert', 'tiles');
@@ -190,12 +192,15 @@ export class GameboardService extends Phaser.Scene {
     // this.sourceMarker.strokeRect(0, 0, 1 * this.map.tileWidth, 1 * this.map.tileHeight);
     this.sourceMarker.strokeRect(0, 0, 1 * tilewidth, 1 * tileheight);
 
+    // todo this.cameras.main.startFollow(this.sourceMarker);
+
     // // Graphic to show the "destination" of the copy operation
     // this.destinationMarker = this.add.graphics({ lineStyle: { width: 5, color: 0x000000, alpha: 1 } });
     // this.destinationMarker.strokeRect(0, 0, 3 * this.map.tileWidth, 3 * this.map.tileHeight);
     // this.destinationMarker.setPosition(this.map.tileWidth * 5, this.map.tileHeight * 10);
 
-    this.cameras.main.setBounds(0, 0, 8000, 6000);
+    // this.cameras.main.setBounds(0, 0, 8000, 6000);
+    // this.game.world.setBounds(0,0,8000,6000);
 
     const cursors = this.input.keyboard.createCursorKeys();
     const controlConfig = {
@@ -220,18 +225,46 @@ export class GameboardService extends Phaser.Scene {
 
     // stop browser default menu on right click
     // tslint:disable-next-line: typedef,  tslint:disable-next-line: only-arrow-functions
-    this.game.canvas.oncontextmenu = function(e) { e.preventDefault(); };
+    this.game.canvas.oncontextmenu = function (e) { e.preventDefault(); };
 
     // create bases
-    this.baseManager.addBase(1, { x: 50, y: 80 }, this);
-    this.baseManager.addBase(2, { x: 130, y: 200 }, this);
-    this.baseManager.addBase(3, { x: 1000, y: 1000 }, this);
+    this.basegroup = this.physics.add.group();
 
+    this.basegroup.add(this.baseManager.addBase(1, { x: 350, y: 180 }, this).sprite);
+    this.basegroup.add(this.baseManager.addBase(2, { x: 180, y: 400 }, this).sprite);
+    this.basegroup.add(this.baseManager.addBase(3, { x: 1000, y: 1000 }, this).sprite);
+
+    this.miners = this.physics.add.group();
+
+    // this.add.image(908, 3922, 'space', 'gas-giant').setOrigin(0).setScrollFactor(0.6);
+    // this.add.image(3140, 2974, 'space', 'brown-planet').setOrigin(0).setScrollFactor(0.6).setScale(0.8).setTint(0x882d2d);
+
+    const rect = new Phaser.Geom.Rectangle(0, 0, GameConstants.worldWidth, GameConstants.worldHeight);
 
     //  create chests
-    this.chests = this.physics.add.group({ key: 'chest', frameQuantity: 10 });
-    const rect = new Phaser.Geom.Rectangle(0, 0, GameConstants.width, GameConstants.height);
+    this.chests = this.physics.add.group({ key: 'chest', frameQuantity: 100 });
     Phaser.Actions.RandomRectangle(this.chests.getChildren(), rect);
+    this.chests.getChildren().forEach(element => {
+      element.displayWidth = GameConstants.entitySize;
+      element.displayHeight = GameConstants.entitySize;
+    });
+
+    //  create ore
+    this.orePool = this.physics.add.group({ key: 'ore', frameQuantity: 100 });
+    Phaser.Actions.RandomRectangle(this.orePool.getChildren(), rect);
+    this.orePool.getChildren().forEach(element => {
+      element.displayWidth = GameConstants.entitySize;
+      element.displayHeight = GameConstants.entitySize;
+    });
+
+    //  create energy
+    this.energyPool = this.physics.add.group({ key: 'energy', frameQuantity: 100 });
+    Phaser.Actions.RandomRectangle(this.energyPool.getChildren(), rect);
+    this.energyPool.getChildren().forEach(element => {
+      element.displayWidth = GameConstants.entitySize;
+      element.displayHeight = GameConstants.entitySize;
+    });
+
 
     this.input.on('drag', function (pointer, gameObject, dragX, dragY) {
       gameObject.x = dragX;
@@ -270,11 +303,42 @@ export class GameboardService extends Phaser.Scene {
         self.score = self.score + 10;
         ball.destroy();
         console.log('colision', self.score);
+
         // ball.setAlpha(0.5);
         // crate.setAlpha(0.5);
       });
-  }
 
+    this.physics.add.collider(
+      this.miners,
+      this.orePool,
+      function (miner, chest): void {
+        console.log('miner ore collision', miner, chest);
+        miner.body.velocity.x = 0;
+        miner.body.velocity.y = 0;
+        //     crate.destroy();
+        self.energy = self.energy + 10;
+       // chest.destroy();
+        miner.setData('orepayload', 50);
+        // miner.data.setAlpha(0.5);
+      });
+
+    this.physics.add.collider(
+      this.miners,
+      this.basegroup,
+      function (miner, chest): void {
+        console.log('miner base collision', miner, chest);
+        miner.body.velocity.x = 0;
+        miner.body.velocity.y = 0;
+        const payload = miner.getData('orepayload');
+        if (payload) {
+          self.energy = self.energy + payload;
+          miner.setData('orepayload', 0);
+        }
+        chest.body.velocity.x=0;
+        chest.body.velecity.y=0;
+        // miner.data.setAlpha(0.5);
+      });
+  }
 
   public preload(): void {
     console.log('preload method');
@@ -296,7 +360,14 @@ export class GameboardService extends Phaser.Scene {
     // space
     this.load.image('background', 'assets/space/nebula.jpg');
     this.load.image('stars', 'assets/space/stars.png');
-    this.load.atlas('space', 'assets/space/space.png', 'assets/pace/space.json');
+    this.load.atlas('space', 'assets/space/space.png', 'assets/space/space.json');
+
+    this.load.image('ore', 'assets/space/blue-planet.png');
+    this.load.image('energy', 'assets/space/green-orb.png');
+
+    // plugin example
+    // const url = 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexpinchplugin.min.js';
+    // this.load.plugin('rexpinchplugin', url, true);
   }
 
   public update(time, delta): void {
@@ -313,21 +384,25 @@ export class GameboardService extends Phaser.Scene {
     // let destinationTileY = this.map.worldToTileY(this.destinationMarker.y);
 
     // Snap to tile coordinates, but in world space
-    // this.sourceMarker.x = this.map.tileToWorldX(sourceTileX);
-    // this.sourceMarker.y = this.map.tileToWorldY(sourceTileY);
+    this.sourceMarker.x = worldPoint.x;
+    this.sourceMarker.y = worldPoint.y;
 
     // button down
     if (this.input.manager.activePointer.isDown) {
-      if (this.sourceMarker.y >= 0) {
+      if (worldPoint.y > 0) {
         console.log('click on', worldPoint.x, worldPoint.y);
 
-        this.setCurrentCoordinate({ x:worldPoint.x, y: worldPoint.y });
-        this.baseManager.hightlightBase({ x: worldPoint.x, y: worldPoint.y });
+        this.setCurrentCoordinate({ x: worldPoint.x, y: worldPoint.y });
+        if (this.baseManager.hightlightBase({ x: worldPoint.x, y: worldPoint.y })) {
+          this.cameras.main.zoom = 0.5;
+          //
+        } else {
 
-        // todo test
-        const closeTarget: any = this.physics.closest(this.baseManager.getCurrentBase().sprite, this.enemyWave.getChildren());
-        if (closeTarget) {
-          this.shootBullet(this.baseManager.getCurrentBase().sprite, closeTarget);
+          // todo test
+          const closeTarget: any = this.physics.closest(this.baseManager.getCurrentBase().sprite, this.enemyWave.getChildren());
+          if (closeTarget) {
+            this.shootBullet(this.baseManager.getCurrentBase().sprite, closeTarget);
+          }
         }
       }
 
@@ -338,13 +413,6 @@ export class GameboardService extends Phaser.Scene {
       this.sprites[i] = EntityBehaviors.updateEntity(value, this);
     }
 
-
-    // this.sprites.forEach(value => {
-    //   value.sprite.setPosition(value.baseloc.x, value.baseloc.y);
-    //   Phaser.Math.RotateAroundDistance(value.sprite, value.sprite.x, value.sprite.y, this.angle, value.distance);
-    //   value.angle = value.angle + 0.01;
-
-    // });
   }
 }
 

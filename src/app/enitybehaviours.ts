@@ -16,13 +16,25 @@ export class EntityBehaviors {
             }
             value.sprite.angle = value.angle;
         } else if (value.entityKind === EntityType.Miner) {
-            const closest: any = gs.physics.closest(value.sprite, gs.chests.getChildren());
-            // const closest = gs.chests;
-            if (closest) {
-                console.log('closest', closest);
-                const x = closest.x;
-                const y = closest.y;
+
+            const payload = value.sprite.getData('orepayload');
+            if (payload) {
+              //  console.log('miner to base');
+                const x = value.baseloc.x;
+                const y = value.baseloc.y;
                 gs.physics.accelerateTo(value.sprite, x, y, 10, 300, 300);
+            } else {
+             //   console.log('miner to ore');
+                const closest: any = gs.physics.closest(value.sprite, gs.orePool.getChildren());
+                // const closest = gs.chests;
+                if (closest) {
+                    // console.log('closest', closest);
+                    const x = closest.x;
+                    const y = closest.y;
+                    gs.physics.accelerateTo(value.sprite, x, y, 10, 300, 300);
+                } else {
+                    // todo what now
+                }
             }
         } else if (value.entityKind === EntityType.Attacker) {
             if (value.timer < 600) {
