@@ -317,7 +317,7 @@ export class GameboardService extends Phaser.Scene {
         miner.body.velocity.y = 0;
         //     crate.destroy();
         self.energy = self.energy + 10;
-       // chest.destroy();
+        // chest.destroy();
         miner.setData('orepayload', 50);
         // miner.data.setAlpha(0.5);
       });
@@ -334,8 +334,8 @@ export class GameboardService extends Phaser.Scene {
           self.energy = self.energy + payload;
           miner.setData('orepayload', 0);
         }
-        chest.body.velocity.x=0;
-        chest.body.velecity.y=0;
+        chest.body.velocity.x = 0;
+        chest.body.velocity.y = 0;
         // miner.data.setAlpha(0.5);
       });
   }
