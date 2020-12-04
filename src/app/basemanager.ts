@@ -7,17 +7,21 @@ export class BaseManager {
 
     public bases: Base[] = [];
     // tslint:disable-next-line: no-inferrable-types
-    public currentbase: number = -1;
+    public currentbase: number = 0;
+
+    public getCurrentBase(): Base {
+        return this.bases[this.currentbase];
+    }
 
     public addBase(id: number, loc: Coordinate, gs: GameboardService): void {
         console.log('addBase', id, loc);
         //  bases
         const base: Base = new Base();
         base.location = loc;
-        const sourceTileX = gs.map.tileToWorldX(loc.x);
-        const sourceTileY = gs.map.tileToWorldY(loc.y);
+        const sourceTileX = loc.x; // gs.map.tileToWorldX(loc.x);
+        const sourceTileY = loc.y; //gs.map.tileToWorldY(loc.y);
         console.log('add base');
-        const entity = gs.add.sprite(sourceTileX, sourceTileY, 'base');
+        const entity = gs.physics.add.sprite(sourceTileX, sourceTileY, 'base');
         base.sprite = entity;
         base.entities = [];
         this.bases.push(base);

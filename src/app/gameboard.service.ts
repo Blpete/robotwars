@@ -5,6 +5,8 @@ import { EntityBehaviors } from './enitybehaviours';
 import { GameConstants } from './gameconstants';
 import { Coordinate, EntityClass, EntityType } from './gameTypes';
 
+// var Health = PhaserHealth;
+
 const SCENE_KEY = 'Scene';
 
 @Injectable({
@@ -24,7 +26,7 @@ export class GameboardService extends Phaser.Scene {
   private controls: any;
   private sourceMarker: any;
   private destinationMarker: any;
-  map: any;
+  // map: any;
   private sprites: EntityClass[] = [];
   // tslint:disable-next-line: no-inferrable-types
   private paused: boolean = false;
@@ -36,11 +38,17 @@ export class GameboardService extends Phaser.Scene {
   bullets;
   lastBulletShotAt;
   bulletPool;
+  enemyWave;
+  orePool;
+  energyPool;
+
+  // space
+  bg;
 
   // Define constants
-   SHOT_DELAY = 100; // milliseconds (10 bullets/second)
-   BULLET_SPEED = 500; // pixels/second
-   NUMBER_OF_BULLETS = 20;
+  SHOT_DELAY = 500; // milliseconds (10 bullets/second)
+  BULLET_SPEED = 500; // pixels/second
+  NUMBER_OF_BULLETS = 30;
 
   constructor() {
     super({ key: SCENE_KEY });
@@ -73,11 +81,11 @@ export class GameboardService extends Phaser.Scene {
 
     this.robotCount++;
 
-    const sourceTileX = this.map.tileToWorldX(this.currentLoc.x);
-    const sourceTileY = this.map.tileToWorldY(this.currentLoc.y);
-    console.log('addNewResource', kind, sourceTileX, sourceTileY);
+   // const sourceTileX = this.map.tileToWorldX(this.currentLoc.x);
+   // const sourceTileY = this.map.tileToWorldY(this.currentLoc.y);
+    console.log('addNewResource', kind, this.currentLoc.x, this.currentLoc.y);
 
-    const entity = this.physics.add.sprite(sourceTileX, sourceTileY, kind.toString());
+    const entity = this.physics.add.sprite(this.currentLoc.y, this.currentLoc.y, kind.toString());
     entity.setBounce(0.2);
     entity.setCollideWorldBounds(true);
     entity.setVelocityX(Phaser.Math.Between(-10, 10));
@@ -89,13 +97,14 @@ export class GameboardService extends Phaser.Scene {
     obj.sprite = entity;
     obj.angle = Math.random() * 360;
     obj.distance = Math.random() * 150;
-    obj.baseloc = { x: sourceTileX, y: sourceTileY };
+    const base = this.baseManager.getCurrentBase();
+    obj.baseloc = { x: base.sprite.x, y: base.sprite.y };
     this.sprites.push(obj);
 
   }
 
   public setCurrentCoordinate(coord: Coordinate): void {
-   // console.log('setCurrentCoord', coord, coord.x);
+    // console.log('setCurrentCoord', coord, coord.x);
     this.currentLoc = coord;
   }
 
@@ -112,14 +121,14 @@ export class GameboardService extends Phaser.Scene {
   }
 
 
-  public shootBullet(): void {
+  public shootBullet(source: any, target: any): void {
     // Enforce a short delay between shots by recording
     // the time that each bullet is shot and testing if
     // the amount of time since the last shot is more than
     // the required delay.
     if (this.lastBulletShotAt === undefined) { this.lastBulletShotAt = 0; }
     if (this.game.getTime() - this.lastBulletShotAt < this.SHOT_DELAY) { return; }
-    this.lastBulletShotAt = this.game.getTime() ;
+    this.lastBulletShotAt = this.game.getTime();
     console.log('shootbullet');
 
     // Get a dead bullet from the pool
@@ -130,7 +139,7 @@ export class GameboardService extends Phaser.Scene {
 
     // Revive the bullet
     // This makes the bullet "alive"
-   // bullet.revive();
+    // bullet.revive();
 
     // Bullets should kill themselves when they leave the world.
     // Phaser takes care of this for me by setting this flag
@@ -140,21 +149,25 @@ export class GameboardService extends Phaser.Scene {
     bullet.outOfBoundsKill = true;
 
     // Set the bullet position to the gun position
-    const sourceTileX = this.map.tileToWorldX(this.currentLoc.x);
-    const sourceTileY = this.map.tileToWorldY(this.currentLoc.y);
+    // const sourceTileX = this.map.tileToWorldX(this.currentLoc.x);
+    // const sourceTileY = this.map.tileToWorldY(this.currentLoc.y);
 
-    bullet.x = sourceTileX;
-    bullet.y = sourceTileY;
+    bullet.x = source.x;
+    bullet.y = source.y;
 
     bullet.setActive(true);
     bullet.setVisible(true);
-    console.log('bullet', bullet);
+    // console.log('bullet', bullet);
 
-    //bullet.reset(this.gun.x, this.gun.y);
+    let angle = 0.0;
+    //  console.log('closest:', closeChest);
+    angle = Phaser.Math.Angle.Between(source.x, source.y, target.x, target.y);
+    //  console.log('Angle:', angle);
 
     // Shoot it
-    bullet.body.velocity.x = this.BULLET_SPEED;
-    bullet.body.velocity.y = 0;
+    this.physics.velocityFromRotation(angle, this.BULLET_SPEED, bullet.body.velocity);
+    // bullet.body.velocity.x = this.BULLET_SPEED;
+    // bullet.body.velocity.y = 0;
   }
 
 
@@ -162,22 +175,27 @@ export class GameboardService extends Phaser.Scene {
   public create(): void {
     console.log('SCENE Create');
 
+    // SPACE
+    //  World size is 8000 x 6000
+    this.bg = this.add.tileSprite(400, 300, 800, 600, 'background').setScrollFactor(0);
 
-
-    this.map = this.make.tilemap({ key: 'map', tileWidth: 32, tileHeight: 32 });
-    const tiles = this.map.addTilesetImage('Desert', 'tiles');
-    const layer = this.map.createDynamicLayer('Ground', tiles, 0, 0);
+    // this.map = this.make.tilemap({ key: 'map', tileWidth: 32, tileHeight: 32 });
+    // const tiles = this.map.addTilesetImage('Desert', 'tiles');
+    // const layer = this.map.createDynamicLayer('Ground', tiles, 0, 0);
 
     // Graphic to show the "source" of the copy operation
+    const tilewidth = 16;
+    const tileheight = 16;
     this.sourceMarker = this.add.graphics({ lineStyle: { width: 5, color: 0xffffff, alpha: 1 } });
-    this.sourceMarker.strokeRect(0, 0, 1 * this.map.tileWidth, 1 * this.map.tileHeight);
+    // this.sourceMarker.strokeRect(0, 0, 1 * this.map.tileWidth, 1 * this.map.tileHeight);
+    this.sourceMarker.strokeRect(0, 0, 1 * tilewidth, 1 * tileheight);
 
     // // Graphic to show the "destination" of the copy operation
     // this.destinationMarker = this.add.graphics({ lineStyle: { width: 5, color: 0x000000, alpha: 1 } });
     // this.destinationMarker.strokeRect(0, 0, 3 * this.map.tileWidth, 3 * this.map.tileHeight);
     // this.destinationMarker.setPosition(this.map.tileWidth * 5, this.map.tileHeight * 10);
 
-    this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
+    this.cameras.main.setBounds(0, 0, 8000, 6000);
 
     const cursors = this.input.keyboard.createCursorKeys();
     const controlConfig = {
@@ -205,9 +223,9 @@ export class GameboardService extends Phaser.Scene {
     this.game.canvas.oncontextmenu = function(e) { e.preventDefault(); };
 
     // create bases
-    this.baseManager.addBase(1, { x: 5, y: 8 }, this);
-    this.baseManager.addBase(2, { x: 13, y: 2 }, this);
-    this.baseManager.addBase(3, { x: 10, y: 10 }, this);
+    this.baseManager.addBase(1, { x: 50, y: 80 }, this);
+    this.baseManager.addBase(2, { x: 130, y: 200 }, this);
+    this.baseManager.addBase(3, { x: 1000, y: 1000 }, this);
 
 
     //  create chests
@@ -215,12 +233,18 @@ export class GameboardService extends Phaser.Scene {
     const rect = new Phaser.Geom.Rectangle(0, 0, GameConstants.width, GameConstants.height);
     Phaser.Actions.RandomRectangle(this.chests.getChildren(), rect);
 
-    this.input.on('drag', function(pointer, gameObject, dragX, dragY) {
+    this.input.on('drag', function (pointer, gameObject, dragX, dragY) {
       gameObject.x = dragX;
       gameObject.y = dragY;
       console.log('drag', gameObject);
     });
 
+    // enemy wave
+    this.enemyWave = this.physics.add.group({ key: 'badguy', frameQuantity: 10 });
+    Phaser.Actions.RandomRectangle(this.enemyWave.getChildren(), rect);
+
+    // // Add component to Sprite class
+    // PhaserHealth.MixinTo(Phaser.GameObjects.Sprite);
 
     // create bullets
 
@@ -229,26 +253,25 @@ export class GameboardService extends Phaser.Scene {
     this.bulletPool = this.physics.add.group();
     for (let i = 0; i < this.NUMBER_OF_BULLETS; i++) {
       // Create each bullet and add it to the group.
-      const bullet: any  = this.add.sprite(0, 0, 'bullet');
+      const bullet: any = this.add.sprite(0, 0, 'bullet');
       this.bulletPool.add(bullet);
 
       // Set its initial state to "dead".
       this.bulletPool.killAndHide(bullet);
     }
 
-    let self = this;
+    const self = this;
     this.physics.add.collider(
       this.bulletPool,
-      this.chests,
-      function (ball, crate): void
-      {
+      this.enemyWave,
+      function (ball, crate): void {
         //  console.log('colision', ball, crate);
-          crate.destroy();
-          self.score = self.score + 10;
-          ball.destroy();
-          console.log('colision', self.score);
-          // ball.setAlpha(0.5);
-          // crate.setAlpha(0.5);
+        crate.destroy();
+        self.score = self.score + 10;
+        ball.destroy();
+        console.log('colision', self.score);
+        // ball.setAlpha(0.5);
+        // crate.setAlpha(0.5);
       });
   }
 
@@ -267,7 +290,13 @@ export class GameboardService extends Phaser.Scene {
     this.load.image('loader', 'assets/sprites/blue_ball.png');
     this.load.image('base-highlight', 'assets/sprites/blockBNM.png');
     this.load.image('chest', 'assets/sprites/carrot.png');
-    this.load.image('bullet','assets/sprites/bullets/bullet1.png' );
+    this.load.image('bullet', 'assets/sprites/bullets/bullet7.png');
+    this.load.image('badguy', 'assets/sprites/ship.png');
+
+    // space
+    this.load.image('background', 'assets/space/nebula.jpg');
+    this.load.image('stars', 'assets/space/stars.png');
+    this.load.atlas('space', 'assets/space/space.png', 'assets/pace/space.json');
   }
 
   public update(time, delta): void {
@@ -278,25 +307,28 @@ export class GameboardService extends Phaser.Scene {
 
     const worldPoint: any = this.input.activePointer.positionToCamera(this.cameras.main);
 
-    const sourceTileX = this.map.worldToTileX(worldPoint.x);
-    const sourceTileY = this.map.worldToTileY(worldPoint.y);
+    // const sourceTileX = this.map.worldToTileX(worldPoint.x);
+    // const sourceTileY = this.map.worldToTileY(worldPoint.y);
     //  let destinationTileX = this.map.worldToTileX(this.destinationMarker.x);
     // let destinationTileY = this.map.worldToTileY(this.destinationMarker.y);
 
     // Snap to tile coordinates, but in world space
-    this.sourceMarker.x = this.map.tileToWorldX(sourceTileX);
-    this.sourceMarker.y = this.map.tileToWorldY(sourceTileY);
+    // this.sourceMarker.x = this.map.tileToWorldX(sourceTileX);
+    // this.sourceMarker.y = this.map.tileToWorldY(sourceTileY);
 
     // button down
     if (this.input.manager.activePointer.isDown) {
-      if (this.sourceMarker.y > 0) {
-        console.log('click on', sourceTileX, sourceTileY);
+      if (this.sourceMarker.y >= 0) {
+        console.log('click on', worldPoint.x, worldPoint.y);
 
-        this.setCurrentCoordinate({ x: sourceTileX, y: sourceTileY });
-        this.baseManager.hightlightBase({ x: sourceTileX, y: sourceTileY });
+        this.setCurrentCoordinate({ x:worldPoint.x, y: worldPoint.y });
+        this.baseManager.hightlightBase({ x: worldPoint.x, y: worldPoint.y });
 
         // todo test
-        this.shootBullet();
+        const closeTarget: any = this.physics.closest(this.baseManager.getCurrentBase().sprite, this.enemyWave.getChildren());
+        if (closeTarget) {
+          this.shootBullet(this.baseManager.getCurrentBase().sprite, closeTarget);
+        }
       }
 
     }

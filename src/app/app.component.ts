@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { GameboardService } from './gameboard.service';
 import Phaser from 'phaser';
+// import PhaserHealth from 'PhaserHealth';
 import { GameConstants } from './gameconstants';
 
 @Component({
@@ -9,8 +10,10 @@ import { GameConstants } from './gameconstants';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'robotwars';
+  title = 'RobotWars';
   public readonly phaser = Phaser;
+ // public readonly Health = PhaserHealth;
+
   // public readonly config = {
   //   type: Phaser.AUTO,
   //   width: window.innerWidth,
