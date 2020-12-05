@@ -45,13 +45,17 @@ export class GameboardService extends Phaser.Scene {
   // bullets
   bullets;
   lastBulletShotAt;
-  bulletPool: Phaser.GameObjects.Group;
-  enemyWave: Phaser.GameObjects.Group;
+  bulletPool;
+  enemyWave;
   orePool;
   energyPool;
 
   // space
   bg;
+
+  // particles
+  emitter0;
+  emitter1;
 
   // Define constants
   SHOT_DELAY = 500; // milliseconds (10 bullets/second)
@@ -176,7 +180,6 @@ export class GameboardService extends Phaser.Scene {
     bullet.setVisible(true);
 
     let angle = 0.0;
-    //  console.log('closest:', closeChest);
     angle = Phaser.Math.Angle.Between(source.x, source.y, target.x, target.y);
     //  console.log('Angle:', angle);
 
@@ -303,6 +306,13 @@ export class GameboardService extends Phaser.Scene {
 
     // enemy wave
     this.enemyWave = this.physics.add.group({ key: 'badguy', frameQuantity: 10 });
+    this.enemyWave.getChildren().forEach(element => {
+      element.displayWidth = GameConstants.entitySize;
+      element.displayHeight = GameConstants.entitySize;
+      // todo get closest base;
+  //    this.physics.accelerateTo(element, 350, 180, 10, 30, 30);
+      element.setData('health', 1000);
+    });
     Phaser.Actions.RandomRectangle(this.enemyWave.getChildren(), rect);
 
     // create bullets
@@ -332,12 +342,17 @@ export class GameboardService extends Phaser.Scene {
     this.physics.add.collider(
       this.miners,
       this.orePool,
-      function (miner, chest): void {
+      function (miner: any, chest): void {
         console.log('miner ore collision', miner, chest);
         miner.body.velocity.x = 0;
         miner.body.velocity.y = 0;
         // chest.destroy();
         miner.setData('orepayload', 50);
+      //  self.emitter0.setPostion( miner.body.x, miner.body.y);
+        //self.emitter0.y = miner.body.y;
+        self.emitter0.active = true;
+        self.emitter0.explode();
+
         let remaining = chest.getData('ore_count');
         remaining = remaining - 50;
         if (remaining < 1) {
@@ -357,7 +372,7 @@ export class GameboardService extends Phaser.Scene {
         miner.body.velocity.x = 0;
         miner.body.velocity.y = 0;
         // chest.destroy();
-        miner.setData('orepayload', 50);
+        miner.setData('energy_payload', 50);
         let remaining = chest.getData('energy_count');
         remaining = remaining - 50;
         if (remaining < 1) {
@@ -379,7 +394,7 @@ export class GameboardService extends Phaser.Scene {
         miner.body.velocity.y = 0;
         const payload = miner.getData('orepayload');
         if (payload) {
-          self.energy = self.energy + payload;
+          self.resources = self.resources + payload;
           miner.setData('orepayload', 0);
         }
         chest.body.velocity.x = 0;
@@ -401,6 +416,32 @@ export class GameboardService extends Phaser.Scene {
         chest.body.velocity.x = 0;
         chest.body.velocity.y = 0;
       });
+
+
+    // emitters
+    this.emitter0 = this.add.particles('spark0').createEmitter({
+      x: 400,
+      y: 300,
+      speed: { min: -800, max: 800 },
+      angle: { min: 0, max: 360 },
+      scale: { start: 0.5, end: 0 },
+      blendMode: 'SCREEN',
+      active: false,
+      lifespan: 600,
+      gravityY: 800
+    });
+
+    this.emitter1 = this.add.particles('spark1').createEmitter({
+      x: 400,
+      y: 300,
+      speed: { min: -800, max: 800 },
+      angle: { min: 0, max: 360 },
+      scale: { start: 0.3, end: 0 },
+      blendMode: 'SCREEN',
+      active: false,
+      lifespan: 300,
+      gravityY: 800
+    });
   }
 
   public preload(): void {
@@ -427,6 +468,10 @@ export class GameboardService extends Phaser.Scene {
 
     this.load.image('ore', 'assets/space/blue-planet.png');
     this.load.image('energy', 'assets/space/green-orb.png');
+
+    // particles
+    this.load.image('spark0', 'assets/particles/blue.png');
+    this.load.image('spark1', 'assets/particles/red.png');
 
     // plugin example
     // const url = 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexpinchplugin.min.js';

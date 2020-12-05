@@ -14,14 +14,15 @@ export class EntityBehaviors {
             if (value.angle > 360.0) {
                 value.angle = value.angle - 360.0;
             }
-            value.sprite.angle = value.angle;
+            value.sprite.angle = value.angle + 90;
         } else if (value.entityKind === EntityType.Miner) {
-
+            let angle = 0.0;
             const payload = value.sprite.getData('orepayload');
             if (payload) {
                 //  console.log('miner to base');
                 const x = value.baseloc.x;
                 const y = value.baseloc.y;
+                angle = Phaser.Math.Angle.Between(value.sprite.x, value.sprite.y, x, y);
                 gs.physics.accelerateTo(value.sprite, x, y, 10, 30, 30);
             } else {
                 //   console.log('miner to ore');
@@ -30,15 +31,18 @@ export class EntityBehaviors {
                     // console.log('closest', closest);
                     const x = closest.x;
                     const y = closest.y;
+                    angle = Phaser.Math.Angle.Between(value.sprite.x, value.sprite.y, x, y);
                     gs.physics.accelerateTo(value.sprite, x, y, 10, 30, 30);
                 } else {
                     // todo what now
                     // no resources /  go back to base
                     const x = value.baseloc.x;
                     const y = value.baseloc.y;
+                    angle = Phaser.Math.Angle.Between(value.sprite.x, value.sprite.y, x, y);
                     gs.physics.accelerateTo(value.sprite, x, y, 10, 30, 30);
                 }
             }
+            value.sprite.rotation = angle + Math.PI / 2.0;
         } else if (value.entityKind === EntityType.Loader) {
 
             const payload = value.sprite.getData('energy_payload');
