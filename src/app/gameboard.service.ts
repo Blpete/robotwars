@@ -228,7 +228,7 @@ export class GameboardService extends Phaser.Scene {
     zoomout.setScrollFactor(0);
     zoomout.setInteractive().on('pointerdown', () => this.zoom_out());
 
-    const zoomin = this.add.text(16, 45, 'Zoom In', 
+    const zoomin = this.add.text(16, 45, 'Zoom In', { 
       fontSize: '24px',
       padding: { x: 10, y: 5 },
       backgroundColor: '#000000',
@@ -297,8 +297,6 @@ export class GameboardService extends Phaser.Scene {
     // PhaserHealth.MixinTo(Phaser.GameObjects.Sprite);
 
     // create bullets
-
-    // Create an object representing our gun
     // Create an object pool of bullets
     this.bulletPool = this.physics.add.group();
     for (let i = 0; i < this.NUMBER_OF_BULLETS; i++) {
@@ -420,7 +418,6 @@ export class GameboardService extends Phaser.Scene {
 
         this.setCurrentCoordinate({ x: worldPoint.x, y: worldPoint.y });
         if (this.baseManager.hightlightBase({ x: worldPoint.x, y: worldPoint.y })) {
-          this.cameras.main.zoom = 0.5;
           //
         } else {
 
