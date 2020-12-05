@@ -15,12 +15,17 @@ const SCENE_KEY = 'Scene';
 
 export class GameboardService extends Phaser.Scene {
 
+  public homeVisible = true;
+
   robotCount: number;
   currentLoc: Coordinate;
   frameCount: number;
   baseManager: BaseManager;
+
+  //scores
   public score: number;
   energy: number;
+  resources: number;
 
 
   private controls: any;
@@ -34,6 +39,7 @@ export class GameboardService extends Phaser.Scene {
   // chests
   chests;
   miners;
+  loaders;
   private basegroup: Phaser.GameObjects.Group;
 
   // bullets
@@ -60,6 +66,7 @@ export class GameboardService extends Phaser.Scene {
     this.energy = 0;
     this.baseManager = new BaseManager();
     this.score = 0;
+    this.resources = 0;
   }
 
   public pauseGame(): void {
@@ -77,6 +84,9 @@ export class GameboardService extends Phaser.Scene {
   }
   public getEnergy(): number {
     return this.energy;
+  }
+  public getResources(): number {
+    return this.resources;
   }
 
   public newResource(kind: EntityType): void {
@@ -107,6 +117,9 @@ export class GameboardService extends Phaser.Scene {
 
     if (kind === EntityType.Miner) {
       this.miners.add(entity);
+    }
+    if (kind === EntityType.Loader) {
+      this.loaders.add(entity);
     }
   }
 
@@ -228,7 +241,7 @@ export class GameboardService extends Phaser.Scene {
     zoomout.setScrollFactor(0);
     zoomout.setInteractive().on('pointerdown', () => this.zoom_out());
 
-    const zoomin = this.add.text(16, 45, 'Zoom In', { 
+    const zoomin = this.add.text(16, 45, 'Zoom In', {
       fontSize: '24px',
       padding: { x: 10, y: 5 },
       backgroundColor: '#000000',
@@ -251,9 +264,7 @@ export class GameboardService extends Phaser.Scene {
     this.basegroup.add(this.baseManager.addBase(3, { x: 1000, y: 1000 }, this).sprite);
 
     this.miners = this.physics.add.group();
-
-    // this.add.image(908, 3922, 'space', 'gas-giant').setOrigin(0).setScrollFactor(0.6);
-    // this.add.image(3140, 2974, 'space', 'brown-planet').setOrigin(0).setScrollFactor(0.6).setScale(0.8).setTint(0x882d2d);
+    this.loaders = this.physics.add.group();
 
     const rect = new Phaser.Geom.Rectangle(0, 0, GameConstants.worldWidth, GameConstants.worldHeight);
 
@@ -280,6 +291,7 @@ export class GameboardService extends Phaser.Scene {
     this.energyPool.getChildren().forEach(element => {
       element.displayWidth = GameConstants.entitySize;
       element.displayHeight = GameConstants.entitySize;
+      element.setData('energy_count', 1000);
     });
 
 
@@ -292,9 +304,6 @@ export class GameboardService extends Phaser.Scene {
     // enemy wave
     this.enemyWave = this.physics.add.group({ key: 'badguy', frameQuantity: 10 });
     Phaser.Actions.RandomRectangle(this.enemyWave.getChildren(), rect);
-
-    // // Add component to Sprite class
-    // PhaserHealth.MixinTo(Phaser.GameObjects.Sprite);
 
     // create bullets
     // Create an object pool of bullets
@@ -312,15 +321,12 @@ export class GameboardService extends Phaser.Scene {
     this.physics.add.collider(
       this.bulletPool,
       this.enemyWave,
-      function (ball, crate): void {
+      function (bullet, enemy): void {
         //  console.log('colision', ball, crate);
-        crate.destroy();
+        bullet.destroy();
         self.score = self.score + 10;
-        ball.destroy();
+        enemy.destroy();
         console.log('colision', self.score);
-
-        // ball.setAlpha(0.5);
-        // crate.setAlpha(0.5);
       });
 
     this.physics.add.collider(
@@ -341,10 +347,28 @@ export class GameboardService extends Phaser.Scene {
           chest.body.velocity.x = 0;
           chest.body.velocity.y = 0;
         }
-
-
-        // miner.data.setAlpha(0.5);
       });
+
+    this.physics.add.collider(
+      this.loaders,
+      this.energyPool,
+      function (miner, chest): void {
+        console.log('loader energy  collision', miner, chest);
+        miner.body.velocity.x = 0;
+        miner.body.velocity.y = 0;
+        // chest.destroy();
+        miner.setData('orepayload', 50);
+        let remaining = chest.getData('energy_count');
+        remaining = remaining - 50;
+        if (remaining < 1) {
+          chest.destroy();
+        } else {
+          chest.setData('energy_count', remaining);
+          chest.body.velocity.x = 0;
+          chest.body.velocity.y = 0;
+        }
+      });
+
 
     this.physics.add.collider(
       this.miners,
@@ -360,7 +384,22 @@ export class GameboardService extends Phaser.Scene {
         }
         chest.body.velocity.x = 0;
         chest.body.velocity.y = 0;
-        // miner.data.setAlpha(0.5);
+      });
+
+    this.physics.add.collider(
+      this.loaders,
+      this.basegroup,
+      function (loader, chest): void {
+        console.log('loader base collision', loader, chest);
+        loader.body.velocity.x = 0;
+        loader.body.velocity.y = 0;
+        const payload = loader.getData('energy_payload');
+        if (payload) {
+          self.energy = self.energy + payload;
+          loader.setData('energy_payload', 0);
+        }
+        chest.body.velocity.x = 0;
+        chest.body.velocity.y = 0;
       });
   }
 

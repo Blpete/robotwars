@@ -39,6 +39,29 @@ export class EntityBehaviors {
                     gs.physics.accelerateTo(value.sprite, x, y, 10, 30, 30);
                 }
             }
+        } else if (value.entityKind === EntityType.Loader) {
+
+            const payload = value.sprite.getData('energy_payload');
+            if (payload) {
+                const x = value.baseloc.x;
+                const y = value.baseloc.y;
+                gs.physics.accelerateTo(value.sprite, x, y, 10, 30, 30);
+            } else {
+                //   console.log('miner to ore');
+                const closest: any = gs.physics.closest(value.sprite, gs.energyPool.getChildren());
+                if (closest) {
+                    // console.log('closest', closest);
+                    const x = closest.x;
+                    const y = closest.y;
+                    gs.physics.accelerateTo(value.sprite, x, y, 10, 30, 30);
+                } else {
+                    // todo what now
+                    // no resources /  go back to base
+                    const x = value.baseloc.x;
+                    const y = value.baseloc.y;
+                    gs.physics.accelerateTo(value.sprite, x, y, 10, 30, 30);
+                }
+            }
         } else if (value.entityKind === EntityType.Attacker) {
             const closest: any = gs.physics.closest(value.sprite, gs.enemyWave.getChildren());
             if (closest) {

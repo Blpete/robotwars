@@ -1,6 +1,7 @@
 import { constants } from 'buffer';
 
 import { GameboardService } from './gameboard.service';
+import { GameConstants } from './gameconstants';
 import { Base, Coordinate } from './gameTypes';
 
 export class BaseManager {
@@ -24,6 +25,9 @@ export class BaseManager {
         const sourceTileY = loc.y; // gs.map.tileToWorldY(loc.y);
         console.log('add base');
         const entity = gs.physics.add.sprite(sourceTileX, sourceTileY, 'base');
+        entity.displayWidth = GameConstants.entitySize;
+        entity.displayHeight = GameConstants.entitySize;
+
         entity.setBounce(0, 0);
         base.sprite = entity;
         base.entities = [];

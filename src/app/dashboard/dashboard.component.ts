@@ -16,6 +16,7 @@ export class DashboardComponent implements OnInit {
   energy: number;
   resources: number;
   paused: boolean = false;
+  pauseLabel: string = 'Pause';
 
   constructor(public gameService: GameboardService) { }
 
@@ -39,6 +40,7 @@ export class DashboardComponent implements OnInit {
       this.frameRate = this.gameService.getFrameRate();
       this.score = this.gameService.getScore();
       this.energy = this.gameService.getEnergy();
+      this.resources = this.gameService.getResources();
     });
   }
 
@@ -47,11 +49,12 @@ export class DashboardComponent implements OnInit {
     if (!this.paused) {
       this.gameService.pauseGame();
       this.paused = true;
+      this.pauseLabel = 'Resume';
     } else {
       this.gameService.resumeGame();
       this.paused = false;
+      this.pauseLabel = 'Pause';
     }
-
   }
 
   exit(): void {
