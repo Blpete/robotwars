@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import Phaser, { LEFT } from 'phaser';
-import { AnonymousSubject } from 'rxjs/internal/Subject';
 import { BaseManager } from './basemanager';
 import { EntityBehaviors } from './enitybehaviours';
 import { GameConstants } from './gameconstants';
@@ -91,7 +90,7 @@ export class GameboardService extends Phaser.Scene {
     const entity = this.physics.add.sprite(base.location.x, base.location.y, kind.toString());
     entity.displayHeight = GameConstants.entitySize;
     entity.displayWidth = GameConstants.entitySize;
-    entity.setBounce(0.2);
+    entity.setBounce(0);
     entity.setCollideWorldBounds(true);
     entity.setVelocityX(Phaser.Math.Between(-10, 10));
     entity.setVelocityY(Phaser.Math.Between(-10, 10));
@@ -173,6 +172,13 @@ export class GameboardService extends Phaser.Scene {
   }
 
 
+  public zoom_out(): void {
+    this.cameras.main.zoom = this.cameras.main.zoom - 0.1;
+  }
+  public zoom_in(): void {
+    this.cameras.main.zoom = this.cameras.main.zoom + 0.1;
+  }
+
 
   public create(): void {
     console.log('SCENE Create');
@@ -213,13 +219,23 @@ export class GameboardService extends Phaser.Scene {
     };
     this.controls = new Phaser.Cameras.Controls.FixedKeyControl(controlConfig);
 
-    const help = this.add.text(16, 16, 'Wave 1', {
-      fontSize: '18px',
+    const zoomout = this.add.text(16, 16, 'Zoom Out', {
+      fontSize: '24px',
       padding: { x: 10, y: 5 },
       backgroundColor: '#000000',
       fill: '#ffffff'
     });
-    help.setScrollFactor(0);
+    zoomout.setScrollFactor(0);
+    zoomout.setInteractive().on('pointerdown', () => this.zoom_out());
+
+    const zoomin = this.add.text(16, 45, 'Zoom In', 
+      fontSize: '24px',
+      padding: { x: 10, y: 5 },
+      backgroundColor: '#000000',
+      fill: '#ffffff'
+    });
+    zoomin.setScrollFactor(0);
+    zoomin.setInteractive().on('pointerdown', () => this.zoom_in());
 
     this.physics.world.step(0);
 
@@ -255,6 +271,7 @@ export class GameboardService extends Phaser.Scene {
     this.orePool.getChildren().forEach(element => {
       element.displayWidth = GameConstants.entitySize;
       element.displayHeight = GameConstants.entitySize;
+      element.setData('ore_count', 1000);
     });
 
     //  create energy
@@ -315,10 +332,19 @@ export class GameboardService extends Phaser.Scene {
         console.log('miner ore collision', miner, chest);
         miner.body.velocity.x = 0;
         miner.body.velocity.y = 0;
-        //     crate.destroy();
-        self.energy = self.energy + 10;
         // chest.destroy();
         miner.setData('orepayload', 50);
+        let remaining = chest.getData('ore_count');
+        remaining = remaining - 50;
+        if (remaining < 1) {
+          chest.destroy();
+        } else {
+          chest.setData('ore_count', remaining);
+          chest.body.velocity.x = 0;
+          chest.body.velocity.y = 0;
+        }
+
+
         // miner.data.setAlpha(0.5);
       });
 
