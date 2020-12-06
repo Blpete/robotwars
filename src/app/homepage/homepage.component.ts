@@ -23,7 +23,7 @@ export class HomepageComponent implements OnInit {
   newGame(): void {
     console.log('newGame');
     this.showHomepage = false;
-    this.gs.homeVisible = false;
+   // this.gs.homeVisible = false;
     this.newGameEmit.emit('newgame');
   }
   loadGame(): void {
