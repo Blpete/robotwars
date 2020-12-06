@@ -1,15 +1,10 @@
-<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
-<!-- * * * * * * * * * * * The content below * * * * * * * * * * * -->
-<!-- * * * * * * * * * * is only a placeholder * * * * * * * * * * -->
-<!-- * * * * * * * * * * and can be replaced. * * * * * * * * * * * -->
-<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
-<!-- * * * * * * * * * Delete the template below * * * * * * * * * * -->
-<!-- * * * * * * * to get started with your project! * * * * * * * * -->
-<app-homepage></app-homepage>
-<h1>RobotWars</h1>
-<app-dashboard></app-dashboard>
-<app-controls></app-controls>
-<phaser-component (gameReady)="onGameReady($event)" [gameConfig]="config" [Phaser]="phaser"></phaser-component>
+
+<app-homepage  *ngIf="!gameRunning" (newGameEmit)='newGame($event)'></app-homepage>
+<div *ngIf="gameRunning">
+    <app-dashboard (exitGame)='exitGame($event)'></app-dashboard>
+    <app-controls></app-controls>
+    <phaser-component (gameReady)="onGameReady($event)" [gameConfig]="config" [Phaser]="phaser"></phaser-component>
+</div>
 <!-- <app-game></app-game> -->
 
 <!-- <router-outlet></router-outlet> -->

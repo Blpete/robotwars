@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { GameboardService } from '../gameboard.service';
 
 @Component({
@@ -6,8 +6,11 @@ import { GameboardService } from '../gameboard.service';
   templateUrl: './homepage.component.html',
   styleUrls: ['./homepage.component.css']
 })
-export class HomepageComponent implements OnInit {
 
+
+export class HomepageComponent implements OnInit {
+  @Output()
+  public newGameEmit: EventEmitter<string> = new EventEmitter<string>();
   public showHomepage: boolean = true;
 
   constructor(public gs: GameboardService) { }
@@ -21,6 +24,15 @@ export class HomepageComponent implements OnInit {
     console.log('newGame');
     this.showHomepage = false;
     this.gs.homeVisible = false;
+    this.newGameEmit.emit('newgame');
   }
-
+  loadGame(): void {
+    console.log('loadgame');
+  }
+  options(): void {
+    console.log('options');
+  }
+  moreInfo(): void {
+    console.log('moreInfo');
+  }
 }

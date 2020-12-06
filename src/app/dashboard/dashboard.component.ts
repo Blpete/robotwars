@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { interval, timer } from 'rxjs';
 import { GameboardService } from '../gameboard.service';
 
@@ -8,7 +8,8 @@ import { GameboardService } from '../gameboard.service';
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit {
-
+  @Output()
+  public exitGame: EventEmitter<string> = new EventEmitter<string>();
   score: number;
   robots: number;
   simTime: number;
@@ -59,5 +60,7 @@ export class DashboardComponent implements OnInit {
 
   exit(): void {
     console.log('exit clicked');
+    this.gameService.pauseGame();
+    this.exitGame.emit('exitGame');
   }
 }

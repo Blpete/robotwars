@@ -11,10 +11,10 @@ export class EntityBehaviors {
             value.sprite.setPosition(value.baseloc.x, value.baseloc.y);
             Phaser.Math.RotateAroundDistance(value.sprite, value.sprite.x, value.sprite.y, value.angle, value.distance);
             value.angle = value.angle + 0.01;
-            if (value.angle > 360.0) {
-                value.angle = value.angle - 360.0;
-            }
-            value.sprite.angle = value.angle + 90;
+            // if (value.angle > 360.0) {
+            //     value.angle = value.angle - 360.0;
+            // }
+            value.sprite.rotation = value.angle + Math.PI / 2.0;
         } else if (value.entityKind === EntityType.Miner) {
             let angle = 0.0;
             const payload = value.sprite.getData('orepayload');
@@ -67,11 +67,15 @@ export class EntityBehaviors {
                 }
             }
         } else if (value.entityKind === EntityType.Attacker) {
+            let angle = 0;
             const closest: any = gs.physics.closest(value.sprite, gs.enemyWave.getChildren());
             if (closest) {
                 const distance = Phaser.Math.Distance.Between(value.sprite.x, value.sprite.y, closest.x, closest.y);
                 if (distance < 300) {
+                    // todo set angle
+                    angle = Phaser.Math.Angle.Between(value.sprite.x, value.sprite.y, closest.x, closest.y);
                     gs.physics.accelerateTo(value.sprite, closest.x, closest.y, 10, 30, 30);
+                    value.sprite.rotation = angle + Math.PI / 2.0;
                 }
             }
 
@@ -79,7 +83,9 @@ export class EntityBehaviors {
                 value.timer = value.timer + 1;
             } else {
                 value.timer = 0;
-                value.sprite.setVelocity(Phaser.Math.Between(-10, 10), Phaser.Math.Between(-10, 10));
+                angle = Phaser.Math.Between(-Math.PI, Math.PI);
+                gs.physics.velocityFromRotation(angle, 10, value.sprite.body.velocity);
+                value.sprite.rotation = angle + Math.PI / 2.0;
             }
         }
         return value;
