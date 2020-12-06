@@ -22,12 +22,12 @@ export class DashboardComponent implements OnInit {
   constructor(public gameService: GameboardService) { }
 
   ngOnInit(): void {
-    this.score = 100;
-    this.robots = 1;
-    this.simTime = 1;
-    this.frameRate = 1;
-    this.energy = 1000;
-    this.resources = 2000;
+    this.score = 0;
+    this.robots = 0;
+    this.simTime = 0;
+    this.frameRate = 0;
+    this.energy = 0;
+    this.resources = 0;
     // subscribe to timer for one second sim time updates
     this.observableTimer();
 
@@ -37,11 +37,11 @@ export class DashboardComponent implements OnInit {
     const source = timer(1000, 1000);
     const abc = source.subscribe(val => {
       this.simTime++;
-      this.robots = this.gameService.robotCount;
+      this.robots = this.gameService.getScore().robotCount;
       this.frameRate = this.gameService.getFrameRate();
-      this.score = this.gameService.getScore();
-      this.energy = this.gameService.getEnergy();
-      this.resources = this.gameService.getResources();
+      this.score = this.gameService.getScore().score;
+      this.energy = this.gameService.getScore().energy;
+      this.resources = this.gameService.getScore().resource;
     });
   }
 

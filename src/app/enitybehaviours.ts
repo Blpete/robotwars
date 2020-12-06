@@ -23,7 +23,7 @@ export class EntityBehaviors {
                 const x = value.baseloc.x;
                 const y = value.baseloc.y;
                 angle = Phaser.Math.Angle.Between(value.sprite.x, value.sprite.y, x, y);
-                gs.physics.accelerateTo(value.sprite, x, y, 10, 30, 30);
+                gs.physics.moveTo(value.sprite, x, y, value.speed);
             } else {
                 //   console.log('miner to ore');
                 const closest: any = gs.physics.closest(value.sprite, gs.orePool.getChildren());
@@ -32,14 +32,14 @@ export class EntityBehaviors {
                     const x = closest.x;
                     const y = closest.y;
                     angle = Phaser.Math.Angle.Between(value.sprite.x, value.sprite.y, x, y);
-                    gs.physics.accelerateTo(value.sprite, x, y, 10, 30, 30);
+                    gs.physics.moveTo(value.sprite, x, y, value.speed);
                 } else {
                     // todo what now
                     // no resources /  go back to base
                     const x = value.baseloc.x;
                     const y = value.baseloc.y;
                     angle = Phaser.Math.Angle.Between(value.sprite.x, value.sprite.y, x, y);
-                    gs.physics.accelerateTo(value.sprite, x, y, 10, 30, 30);
+                    gs.physics.moveTo(value.sprite, x, y, value.speed);
                 }
             }
             value.sprite.rotation = angle + Math.PI / 2.0;
@@ -49,7 +49,7 @@ export class EntityBehaviors {
             if (payload) {
                 const x = value.baseloc.x;
                 const y = value.baseloc.y;
-                gs.physics.accelerateTo(value.sprite, x, y, 10, 30, 30);
+                gs.physics.moveTo(value.sprite, x, y, value.speed);
             } else {
                 //   console.log('miner to ore');
                 const closest: any = gs.physics.closest(value.sprite, gs.energyPool.getChildren());
@@ -57,13 +57,13 @@ export class EntityBehaviors {
                     // console.log('closest', closest);
                     const x = closest.x;
                     const y = closest.y;
-                    gs.physics.accelerateTo(value.sprite, x, y, 10, 30, 30);
+                    gs.physics.moveTo(value.sprite, x, y, value.speed);
                 } else {
                     // todo what now
                     // no resources /  go back to base
                     const x = value.baseloc.x;
                     const y = value.baseloc.y;
-                    gs.physics.accelerateTo(value.sprite, x, y, 10, 30, 30);
+                    gs.physics.moveTo(value.sprite, x, y, value.speed);
                 }
             }
         } else if (value.entityKind === EntityType.Attacker) {

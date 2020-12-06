@@ -3,7 +3,7 @@ import Phaser, { LEFT } from 'phaser';
 import { BaseManager } from './basemanager';
 import { EntityBehaviors } from './enitybehaviours';
 import { GameConstants } from './gameconstants';
-import { Coordinate, EntityClass, EntityType } from './gameTypes';
+import { Coordinate, EntityClass, EntityType, Score } from './gameTypes';
 
 // var Health = PhaserHealth;
 
@@ -19,13 +19,9 @@ export class GameboardService extends Phaser.Scene {
   baseManager: BaseManager;
   currentLoc: Coordinate;
 
-  // scoreboard items
-  robotCount: number;
   frameCount: number;
   // scores
-  public score: number;
-  energy: number;
-  resources: number;
+  public score: Score;
   private paused: boolean = false;
 
   private controls: any;
@@ -63,12 +59,9 @@ export class GameboardService extends Phaser.Scene {
   constructor() {
     super({ key: SCENE_KEY });
     this.currentLoc = { x: 0, y: 10 };
-    this.robotCount = 0;
     this.frameCount = 0;
-    this.energy = 0;
     this.baseManager = new BaseManager();
-    this.score = 0;
-    this.resources = 0;
+    this.score = new Score();
   }
 
   public pauseGame(): void {
@@ -81,19 +74,13 @@ export class GameboardService extends Phaser.Scene {
     this.game.scene.resume(SCENE_KEY);
   }
 
-  public getScore(): number {
+  public getScore(): Score {
     return this.score;
-  }
-  public getEnergy(): number {
-    return this.energy;
-  }
-  public getResources(): number {
-    return this.resources;
   }
 
   public newResource(kind: EntityType): void {
 
-    this.robotCount++;
+    this.score.robotCount++;
     const base = this.baseManager.getCurrentBase();
     // const sourceTileX = this.map.tileToWorldX(this.currentLoc.x);
     // const sourceTileY = this.map.tileToWorldY(this.currentLoc.y);
@@ -338,7 +325,7 @@ export class GameboardService extends Phaser.Scene {
       function (bullet, enemy): void {
         //  console.log('colision', ball, crate);
         bullet.destroy();
-        self.score = self.score + 10;
+        self.score.score = self.score.score + 10;
         enemy.destroy();
         console.log('colision', self.score);
       });
@@ -404,7 +391,7 @@ export class GameboardService extends Phaser.Scene {
         // miner.body.velocity.re
         const payload = miner.getData('orepayload');
         if (payload) {
-          self.resources = self.resources + payload;
+          self.score.resource = self.score.resource + payload;
           miner.setData('orepayload', 0);
         }
         chest.body.velocity.x = 0;
@@ -420,7 +407,7 @@ export class GameboardService extends Phaser.Scene {
         loader.body.velocity.y = 0;
         const payload = loader.getData('energy_payload');
         if (payload) {
-          self.energy = self.energy + payload;
+          self.score.energy = self.score.energy + payload;
           loader.setData('energy_payload', 0);
         }
         chest.body.velocity.x = 0;

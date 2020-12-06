@@ -21,6 +21,7 @@ export class EntityClass {
     behaviour: string;
     level: number;
     timer: number = 0;
+    speed: number = 30;
 }
 
 export class Base {
@@ -30,6 +31,13 @@ export class Base {
     location: Coordinate;
     entities: EntityClass[];
     sprite: any;
+}
+
+export class Score {
+    score: number = 0;
+    resource: number = 0;
+    energy: number = 0;
+    robotCount: number = 0;
 }
 
 
