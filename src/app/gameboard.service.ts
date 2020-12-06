@@ -37,6 +37,8 @@ export class GameboardService extends Phaser.Scene {
   miners;
   attackers;
   loaders;
+  defenders;
+  builders;
   private basegroup: Phaser.GameObjects.Group;
   enemyWave;
   orePool;
@@ -131,6 +133,14 @@ export class GameboardService extends Phaser.Scene {
       this.attackers.add(entity);
       this.score.energy = this.score.energy-10;
     }
+    if (kind === EntityType.Builder) {
+      this.builders.add(entity);
+      this.score.energy = this.score.energy-40;
+    }
+    if (kind === EntityType.Defender) {
+      this.defenders.add(entity);
+      this.score.energy = this.score.energy-20;
+    }
     this.updateScore();
   }
 
@@ -206,7 +216,6 @@ export class GameboardService extends Phaser.Scene {
   public create(): void {
     console.log('SCENE Create');
 
-
     // SPACE
     //  World size is 8000 x 6000
     this.bg = this.add.tileSprite(0, 0, GameConstants.worldWidth, GameConstants.worldHeight, 'background').setScrollFactor(0);
@@ -277,6 +286,8 @@ export class GameboardService extends Phaser.Scene {
     this.miners = this.physics.add.group();
     this.loaders = this.physics.add.group();
     this.attackers = this.physics.add.group();
+    this.defenders = this.physics.add.group();
+    this.builders = this.physics.add.group();
 
     const rect = new Phaser.Geom.Rectangle(0, 0, GameConstants.worldWidth, GameConstants.worldHeight);
 
