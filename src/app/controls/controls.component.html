@@ -1,7 +1,7 @@
 <div class="controlpanel">
-    <button class="resourebtn" (click)="newLoader()">Loader</button>
-    <button class="resourebtn" (click)="newDefender()">Defender</button>
-    <button class="resourebtn" (click)="newAttacker()">Attacker</button>
-    <button class="resourebtn" (click)="newMiner()">Miner</button>
-    <button class="resourebtn" (click)="newBuilder()">Builder</button>
+    <button class="resourebtn" [disabled]="!loaderEnable" (click)="newLoader()">Loader</button>
+    <button class="resourebtn"  [disabled]="!defenderEnable"  (click)="newDefender()">Defender</button>
+    <button class="resourebtn"  [disabled]="!attackerEnable" (click)="newAttacker()">Attacker</button>
+    <button class="resourebtn"  [disabled]="!minerEnable" (click)="newMiner()">Miner</button>
+    <button class="resourebtn"  [disabled]="!builderEnable" (click)="newBuilder()">Builder</button>
 </div>

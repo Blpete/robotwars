@@ -18,6 +18,19 @@
   font-size: large;
 }
 
+button:hover {
+  border: 1px solid #0099cc;
+  background-color: #00aacc;
+  color: #ffffff;
+  padding: 5px 10px;
+}
+.resourebtn:disabled,
+button[disabled]{
+  border: 1px solid #999999;
+  background-color: #cccccc;
+  color: #666666;
+}
+
 * {
   touch-action: manipulation;
 }

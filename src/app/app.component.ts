@@ -59,6 +59,7 @@ export class AppComponent {
     this.game.destroy(true, false);
     this.gameRunning = false;
   }
+
 }
 
 

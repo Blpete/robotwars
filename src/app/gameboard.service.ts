@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { EventEmitter, Injectable, Output } from '@angular/core';
 import Phaser, { LEFT } from 'phaser';
 import { BaseManager } from './basemanager';
 import { EntityBehaviors } from './enitybehaviours';
@@ -14,6 +14,9 @@ const SCENE_KEY = 'Scene';
 })
 
 export class GameboardService extends Phaser.Scene {
+
+  @Output()
+  public scoreUpdate: EventEmitter<Score> = new EventEmitter<Score>();
 
   public homeVisible = true;
   baseManager: BaseManager;
@@ -64,6 +67,14 @@ export class GameboardService extends Phaser.Scene {
     this.score = new Score();
   }
 
+  public getScoreEmitter(): EventEmitter<Score> {
+    return this.scoreUpdate;
+  }
+  public updateScore(): void {
+    this.scoreUpdate.emit(this.score);
+    // todo add sound effect
+  }
+
   public pauseGame(): void {
     this.paused = true;
     this.game.scene.pause(SCENE_KEY);
@@ -81,6 +92,8 @@ export class GameboardService extends Phaser.Scene {
   public newResource(kind: EntityType): void {
 
     this.score.robotCount++;
+    this.updateScore();
+
     const base = this.baseManager.getCurrentBase();
     // const sourceTileX = this.map.tileToWorldX(this.currentLoc.x);
     // const sourceTileY = this.map.tileToWorldY(this.currentLoc.y);
@@ -108,13 +121,17 @@ export class GameboardService extends Phaser.Scene {
 
     if (kind === EntityType.Miner) {
       this.miners.add(entity);
+      this.score.energy = this.score.energy-20;
     }
     if (kind === EntityType.Loader) {
       this.loaders.add(entity);
+      this.score.energy = this.score.energy-5;
     }
     if (kind === EntityType.Attacker) {
       this.attackers.add(entity);
+      this.score.energy = this.score.energy-10;
     }
+    this.updateScore();
   }
 
   public setCurrentCoordinate(coord: Coordinate): void {
@@ -188,6 +205,7 @@ export class GameboardService extends Phaser.Scene {
 
   public create(): void {
     console.log('SCENE Create');
+
 
     // SPACE
     //  World size is 8000 x 6000
@@ -326,6 +344,7 @@ export class GameboardService extends Phaser.Scene {
         //  console.log('colision', ball, crate);
         bullet.destroy();
         self.score.score = self.score.score + 10;
+        self.updateScore();
         enemy.destroy();
         console.log('colision', self.score);
       });
@@ -392,6 +411,7 @@ export class GameboardService extends Phaser.Scene {
         const payload = miner.getData('orepayload');
         if (payload) {
           self.score.resource = self.score.resource + payload;
+          self.updateScore();
           miner.setData('orepayload', 0);
         }
         chest.body.velocity.x = 0;
@@ -408,6 +428,7 @@ export class GameboardService extends Phaser.Scene {
         const payload = loader.getData('energy_payload');
         if (payload) {
           self.score.energy = self.score.energy + payload;
+          self.updateScore();
           loader.setData('energy_payload', 0);
         }
         chest.body.velocity.x = 0;
@@ -439,6 +460,9 @@ export class GameboardService extends Phaser.Scene {
       lifespan: 300,
       gravityY: 800
     });
+
+    // initial score
+    this.updateScore();
   }
 
   public preload(): void {

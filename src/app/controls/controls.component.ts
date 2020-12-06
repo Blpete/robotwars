@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { GameboardService } from '../gameboard.service';
-import { EntityType } from '../gameTypes';
+import { EntityType, Score } from '../gameTypes';
 
 
 @Component({
@@ -12,7 +12,17 @@ export class ControlsComponent implements OnInit {
 
   constructor(public gameService: GameboardService) { }
 
+  loaderEnable = true;
+  attackerEnable = false;
+  minerEnable = false;
+  defenderEnable = false;
+  builderEnable = false;;
+  subscription: any
+
   ngOnInit(): void {
+
+    this.subscription = this.gameService.getScoreEmitter()
+      .subscribe(item => this.scoreUpdated(item));
   }
 
   public newLoader(): void {
@@ -30,7 +40,6 @@ export class ControlsComponent implements OnInit {
     this.gameService.newResource(EntityType.Miner);
   }
 
-
   public newDefender(): void {
     console.log('newDefender pressed');
     this.gameService.newResource(EntityType.Defender);
@@ -39,5 +48,34 @@ export class ControlsComponent implements OnInit {
   public newBuilder(): void {
     console.log('newBuilder pressed');
     this.gameService.newResource(EntityType.Builder);
+  }
+
+  public scoreUpdated(score: Score): void {
+    console.log('scoreUpdate:', score);
+    if (score.energy >= 5) {
+      this.loaderEnable = true;
+    } else {
+      this.loaderEnable = false;
+    }
+    if (score.energy >= 20) {
+      this.minerEnable = true;
+    } else {
+      this.minerEnable = false;
+    }
+    if (score.energy >= 10) {
+      this.attackerEnable = true;
+    } else {
+      this.attackerEnable = false;
+    }
+    if (score.energy >= 20) {
+      this.defenderEnable = true;
+    } else {
+      this.defenderEnable = false;
+    }
+    if (score.energy >= 40) {
+      this.builderEnable = true;
+    } else {
+      this.builderEnable = false;
+    }
   }
 }

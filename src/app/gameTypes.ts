@@ -36,7 +36,7 @@ export class Base {
 export class Score {
     score: number = 0;
     resource: number = 0;
-    energy: number = 0;
+    energy: number = 50;
     robotCount: number = 0;
 }
 
