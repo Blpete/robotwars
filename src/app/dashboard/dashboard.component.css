@@ -6,6 +6,10 @@
   font-weight: bold;
 }
 
+.title {
+  text-align: center;
+}
+
 .val {
   margin-top: 5px;
   margin-bottom: 5px;
