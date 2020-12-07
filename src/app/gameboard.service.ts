@@ -123,23 +123,23 @@ export class GameboardService extends Phaser.Scene {
 
     if (kind === EntityType.Miner) {
       this.miners.add(entity);
-      this.score.energy = this.score.energy-20;
+      this.score.energy = this.score.energy - 20;
     }
     if (kind === EntityType.Loader) {
       this.loaders.add(entity);
-      this.score.energy = this.score.energy-5;
+      this.score.energy = this.score.energy - 5;
     }
     if (kind === EntityType.Attacker) {
       this.attackers.add(entity);
-      this.score.energy = this.score.energy-10;
+      this.score.energy = this.score.energy - 10;
     }
     if (kind === EntityType.Builder) {
       this.builders.add(entity);
-      this.score.energy = this.score.energy-40;
+      this.score.energy = this.score.energy - 40;
     }
     if (kind === EntityType.Defender) {
       this.defenders.add(entity);
-      this.score.energy = this.score.energy-20;
+      this.score.energy = this.score.energy - 20;
     }
     this.updateScore();
   }
@@ -326,14 +326,15 @@ export class GameboardService extends Phaser.Scene {
 
     // enemy wave
     this.enemyWave = this.physics.add.group({ key: 'badguy', frameQuantity: 10 });
+    Phaser.Actions.RandomRectangle(this.enemyWave.getChildren(), rect);
     this.enemyWave.getChildren().forEach(element => {
       element.displayWidth = GameConstants.entitySize;
       element.displayHeight = GameConstants.entitySize;
       // todo get closest base;
-      //    this.physics.accelerateTo(element, 350, 180, 10, 30, 30);
+      this.physics.moveTo(element, 350, 180, 30);
       element.setData('health', 1000);
     });
-    Phaser.Actions.RandomRectangle(this.enemyWave.getChildren(), rect);
+
 
     // create bullets
     // Create an object pool of bullets
@@ -354,6 +355,30 @@ export class GameboardService extends Phaser.Scene {
       function (bullet, enemy): void {
         //  console.log('colision', ball, crate);
         bullet.destroy();
+        self.score.score = self.score.score + 10;
+        self.updateScore();
+        enemy.destroy();
+        console.log('colision', self.score);
+      });
+
+    this.physics.add.collider(
+      this.attackers,
+      this.enemyWave,
+      function (attacker, enemy): void {
+        //  console.log('colision', ball, crate);
+        attacker.destroy();
+        self.score.score = self.score.score + 10;
+        self.updateScore();
+        enemy.destroy();
+        console.log('colision', self.score);
+      });
+
+    this.physics.add.collider(
+      this.defenders,
+      this.enemyWave,
+      function (defender, enemy): void {
+        //  console.log('colision', ball, crate);
+        defender.destroy();
         self.score.score = self.score.score + 10;
         self.updateScore();
         enemy.destroy();
@@ -549,7 +574,9 @@ export class GameboardService extends Phaser.Scene {
 
     for (let i = 0; i < this.sprites.length; i++) {
       const value = this.sprites[i];
+      if (this.sprites[i].sprite.active) {
       this.sprites[i] = EntityBehaviors.updateEntity(value, this);
+      }
     }
 
   }

@@ -20,6 +20,9 @@
 .dashboard {
     background-color: tan;
     font-size: medium;
+    margin-left:0px;
+    margin-bottom:0px;
+    margin-top: 0px;
 }
 
 /* Clear floats after the columns */
