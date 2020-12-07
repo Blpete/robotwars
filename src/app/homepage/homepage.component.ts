@@ -18,6 +18,7 @@ export class HomepageComponent implements OnInit {
 
   ngOnInit(): void {
     this.showHomepage = this.gs.homeVisible;
+    document.body.classList.add('bg-img');
   }
 
   newGame(): void {
