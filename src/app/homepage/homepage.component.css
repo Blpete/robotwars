@@ -1,7 +1,7 @@
 .homepage {
   /*   width: 1024px;  */
     width: 100%;
-    height: 100%;
+    height: 800px;
     background-size: 100% 100%;
     background-image: url('/assets/rw_logo.png');
     background-repeat: no-repeat;
