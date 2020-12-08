@@ -8,13 +8,15 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { GameboardService } from './gameboard.service';
 import { PhaserModule } from 'phaser-component-library';
 import { HomepageComponent } from './homepage/homepage.component';
+import { EntitytileComponent } from './entitytile/entitytile.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     ControlsComponent,
     DashboardComponent,
-    HomepageComponent
+    HomepageComponent,
+    EntitytileComponent
   ],
   imports: [
     PhaserModule,

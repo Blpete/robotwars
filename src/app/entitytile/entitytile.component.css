@@ -1,0 +1,75 @@
+
+.tile {
+  margin-top:5px;
+  margin-bottom: 5px;
+  margin-left: 5px;
+  padding-left: 2px;
+  padding-top: 2px;
+  scroll-padding-bottom: 2px;
+  padding-right: 2px;
+  background-color: rgb(194, 125, 194);
+  color: rgb(255, 255, 255);
+/*   height: 120px;
+  width: 120px; */
+}
+.tilebtn {
+  /* display: grid; */
+  margin-top:1px;
+  margin-bottom: 1px;
+  margin-left: 2px;
+  padding-left: 2px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  padding-right: 2px;
+  scroll-padding-bottom: 2px;
+  padding-right: 2px;
+  background-color: purple;
+  border: 1px solid #0099cc;
+  color: white;
+  width: 100px;
+  /* font-size: small; */
+}
+
+
+button:hover {
+  border: 1px solid #0099cc;
+  background-color: #0c1e22;
+  color: white;
+  padding: 5px 10px;
+}
+.resourebtn:disabled,
+button[disabled]{
+  border: 1px solid #999999;
+  background-color: #311515;
+  color: #666666;
+}
+
+.help {
+  align-content: right;
+  font-size: small;
+}
+.kind {
+  font-size: medium;
+  text-align: left;
+  font-weight: bold;
+}
+.level {
+  text-align: left;
+}
+.count {
+  font-size: small;
+}
+.image {
+  padding-left: 15px 
+}
+.cost {
+  font-size: medium;
+  font-weight: bold;
+  margin-right: 3px;
+  padding-bottom: 4px;
+}
+
+
+* {
+  touch-action: manipulation;
+}

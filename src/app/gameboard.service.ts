@@ -53,7 +53,7 @@ export class GameboardService extends Phaser.Scene {
   bg;
 
   // particles
-  emitter0;
+  public emitter0;  //: Phaser.GameObjects.Particles.ParticleEmitterManager;
   emitter1;
 
   // Define constants
@@ -388,32 +388,34 @@ export class GameboardService extends Phaser.Scene {
     this.physics.add.collider(
       this.miners,
       this.orePool,
-      function (miner: any, chest): void {
-        console.log('miner ore collision', miner, chest);
-        miner.body.velocity.x = 0;
-        miner.body.velocity.y = 0;
-        // chest.destroy();
-        miner.setData('orepayload', 50);
-        //  self.emitter0.setPostion( miner.body.x, miner.body.y);
-        // self.emitter0.y = miner.body.y;
-        // self.emitter0.startFollow(miner);
-        // self.emitter0.active = true;
-        //self.emitter0.emitParticleAt(miner.body.x, miner.body.y, 10);
-        self.emitter0.killAll();
-        self.emitter0.setPosition(miner.body.x, miner.body.y);
-        self.emitter0.explode();
-        // self.emitter0.explode(10, miner.body.x, miner.body.y);
+      this.miner_ore_collider
+      // function (miner: any, chest): void {
+      //   console.log('miner ore collision', miner, chest);
+      //   miner.body.velocity.x = 0;
+      //   miner.body.velocity.y = 0;
+      //   // chest.destroy();
+      //   miner.setData('orepayload', 50);
+      //   //  self.emitter0.setPostion( miner.body.x, miner.body.y);
+      //   // self.emitter0.y = miner.body.y;
+      //   // self.emitter0.startFollow(miner);
+      //   // self.emitter0.active = true;
+      //   //self.emitter0.emitParticleAt(miner.body.x, miner.body.y, 10);
+      //   self.emitter0.killAll();
+      //   self.emitter0.setPosition(miner.body.x, miner.body.y);
+      //   self.emitter0.explode();
+      //   // self.emitter0.explode(10, miner.body.x, miner.body.y);
 
-        let remaining = chest.getData('ore_count');
-        remaining = remaining - 50;
-        if (remaining < 1) {
-          chest.destroy();
-        } else {
-          chest.setData('ore_count', remaining);
-          chest.body.velocity.x = 0;
-          chest.body.velocity.y = 0;
-        }
-      });
+      //   let remaining = chest.getData('ore_count');
+      //   remaining = remaining - 50;
+      //   if (remaining < 1) {
+      //     chest.destroy();
+      //   } else {
+      //     chest.setData('ore_count', remaining);
+      //     chest.body.velocity.x = 0;
+      //     chest.body.velocity.y = 0;
+      //   }
+      // }
+    );
 
     this.physics.add.collider(
       this.loaders,
@@ -480,21 +482,22 @@ export class GameboardService extends Phaser.Scene {
       angle: { min: 0, max: 360 },
       scale: { start: 0.5, end: 0 },
       blendMode: 'SCREEN',
-      active: false,
+      //  active: false,
       lifespan: 600,
-      gravityY: 800
+      gravityY: 800,
+      on: false
     });
 
     this.emitter1 = this.add.particles('spark1').createEmitter({
-      x: 400,
-      y: 300,
-      speed: { min: -800, max: 800 },
+      speed: { min: -800, max: 809 },
       angle: { min: 0, max: 360 },
       scale: { start: 0.3, end: 0 },
+      quantity: { min: 2, max: 10 },
       blendMode: 'SCREEN',
-      active: false,
+      // active: false,
       lifespan: 300,
-      gravityY: 800
+      gravityY: 100,
+      on: false
     });
 
     // initial score
@@ -505,7 +508,7 @@ export class GameboardService extends Phaser.Scene {
     console.log('preload method');
     // this.load.image('mario-tiles', 'assets/tilemaps/tiles/super-mario.png');
     //this.load.image('tiles', 'assets/tilemaps/tiles/tmw_desert_spacing.png');
-    this.load.tilemapTiledJSON('map', 'assets/tilemaps/maps/desert.json');
+    //this.load.tilemapTiledJSON('map', 'assets/tilemaps/maps/desert.json');
     this.load.image('guy', 'assets/sprites/asteroids_ship.png');
     this.load.image('builder', 'assets/sprites/asteroids_ship.png');
     this.load.image('base', 'assets/sprites/blockb.png');
@@ -521,7 +524,7 @@ export class GameboardService extends Phaser.Scene {
     // space
     this.load.image('background', 'assets/space/nebula.jpg');
     this.load.image('stars', 'assets/space/stars.png');
-    this.load.atlas('space', 'assets/space/space.png', 'assets/space/space.json');
+    // this.load.atlas('space', 'assets/space/space.png', 'assets/space/space.json');
 
     this.load.image('ore', 'assets/space/blue-planet.png');
     this.load.image('energy', 'assets/space/green-orb.png');
@@ -564,9 +567,17 @@ export class GameboardService extends Phaser.Scene {
           const closeTarget: any = this.physics.closest(this.baseManager.getCurrentBase().sprite, this.enemyWave.getChildren());
           if (closeTarget) {
             this.shootBullet(this.baseManager.getCurrentBase().sprite, closeTarget);
+
+          this.emitter0.setPosition(worldPoint.x, worldPoint.y);
+          this.emitter0.explode(); //(worldPoint.x, worldPoint.y);
           }
         } else {
           // todo
+          //  this.emitter1.killAll();
+
+          this.emitter1.setPosition(worldPoint.x, worldPoint.y);
+          this.emitter1.emitParticleAt(worldPoint.x, worldPoint.y);
+
         }
       }
 
@@ -575,10 +586,38 @@ export class GameboardService extends Phaser.Scene {
     for (let i = 0; i < this.sprites.length; i++) {
       const value = this.sprites[i];
       if (this.sprites[i].sprite.active) {
-      this.sprites[i] = EntityBehaviors.updateEntity(value, this);
+        this.sprites[i] = EntityBehaviors.updateEntity(value, this);
       }
     }
 
+  }
+
+
+  public miner_ore_collider(miner: any, chest): void {
+    console.log('miner ore collision', miner, chest);
+    miner.body.velocity.x = 0;
+    miner.body.velocity.y = 0;
+    // chest.destroy();
+    miner.setData('orepayload', 50);
+    //  self.emitter0.setPostion( miner.body.x, miner.body.y);
+    // self.emitter0.y = miner.body.y;
+    // self.emitter0.startFollow(miner);
+    // self.emitter0.active = true;
+    //self.emitter0.emitParticleAt(miner.body.x, miner.body.y, 10);
+    miner.scene.emitter0.killAll();
+    miner.scene.emitter0.setPosition(miner.body.x, miner.body.y);
+    miner.scene.emitter0.explode();
+    // self.emitter0.explode(10, miner.body.x, miner.body.y);
+
+    let remaining = chest.getData('ore_count');
+    remaining = remaining - 50;
+    if (remaining < 1) {
+      chest.destroy();
+    } else {
+      chest.setData('ore_count', remaining);
+      chest.body.velocity.x = 0;
+      chest.body.velocity.y = 0;
+    }
   }
 }
 

@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { EntityBehaviors } from './enitybehaviours';
 
 export class Coordinate {
     x: number;
@@ -38,6 +39,11 @@ export class Score {
     resource: number = 0;
     energy: number = 50;
     robotCount: number = 0;
+}
+
+export class entityLookup {
+//
+
 }
 
 

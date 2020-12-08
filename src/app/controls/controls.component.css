@@ -18,6 +18,10 @@
   font-size: large;
 }
 
+.base {
+  text-align: center;
+}
+
 button:hover {
   border: 1px solid #0099cc;
   background-color: #00aacc;
