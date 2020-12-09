@@ -1,13 +1,11 @@
-<div class='tile'>
-    <button class='tilebtn'>
+<button class='tilebtn' [disabled]="disabled" (click)="newEntity()" >
 
-        <label class='count'>{{count}}</label>
-        <br />
-        <label class='kind'>{{kind}}}}</label>
-        <br />
-        <label class='level'>Level {{level}}</label>
-        <br>
-        <label class='cost'>{{cost}}</label>
-        <img class='image' src='/assets/sprites/ship.png' width=32; height=32>
-    </button>
-</div>
+    <label class='count'>{{count}}</label>
+    <br />
+    <label class='kind'>{{kind}}</label>
+    <br />
+    <label class='level'>Level {{level}}</label>
+    <br>
+    <label class='cost'>{{cost}}</label>
+    <img class='image' src='/assets/sprites/ship.png' width=32; height=32>
+</button>

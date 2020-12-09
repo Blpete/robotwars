@@ -17,8 +17,10 @@
 .btn {
     width: 200px;
     background-color: gray;
+    font-weight: bold;
     height: 40px;
-    font-size: 32;
+    font-size: large;
+    color: white;
 
     
 }

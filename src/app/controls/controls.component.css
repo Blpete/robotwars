@@ -18,8 +18,16 @@
   font-size: large;
 }
 
+.tile {
+  padding-left: 10px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
 .base {
   text-align: center;
+  color: white;
+  font-weight: bold;
 }
 
 button:hover {

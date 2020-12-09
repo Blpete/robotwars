@@ -1,9 +1,17 @@
-<div class='base'>Base 1</div>
-<div class="controlpanel">
+
+<!-- <div class="controlpanel">
     <button class="resourebtn" [disabled]="!loaderEnable" (click)="newLoader()">Loader</button>
-    <button class="resourebtn"  [disabled]="!defenderEnable"  (click)="newDefender()">Defender</button>
-    <button class="resourebtn"  [disabled]="!attackerEnable" (click)="newAttacker()">Attacker</button>
-    <button class="resourebtn"  [disabled]="!minerEnable" (click)="newMiner()">Miner</button>
-    <button class="resourebtn"  [disabled]="!builderEnable" (click)="newBuilder()">Builder</button>
-    <app-entitytile></app-entitytile>
+    <button class="resourebtn" [disabled]="!defenderEnable" (click)="newDefender()">Defender</button>
+    <button class="resourebtn" [disabled]="!attackerEnable" (click)="newAttacker()">Attacker</button>
+    <button class="resourebtn" [disabled]="!minerEnable" (click)="newMiner()">Miner</button>
+    <button class="resourebtn" [disabled]="!builderEnable" (click)="newBuilder()">Builder</button>
+</div> -->
+
+<div class="controlpanel">
+    <label class='base'>Base 1</label>
+    <app-entitytile class='tile' entityKind="loader"  [disabled]="!loaderEnable" (tileClick)="newLoader()"></app-entitytile>
+    <app-entitytile class='tile' entityKind="defender" [disabled]="!defenderEnable" (tileClick)="newDefender()"></app-entitytile>
+    <app-entitytile class='tile'  entityKind="attacker" [disabled]="!attackerEnable" (tileClick)="newAttacker()" ></app-entitytile>
+    <app-entitytile class='tile'  entityKind="miner"  [disabled]="!minerEnable" (tileClick)="newMiner()"></app-entitytile>
+    <app-entitytile class='tile'  entityKind="builder"  [disabled]="!builderEnable" (tileClick)="newBuilder()"></app-entitytile>
 </div>
