@@ -13,7 +13,15 @@ export class GameConstants {
     attacker: 10,
     miner: 20,
     builder: 20,
-    defender: 10
+    defender: 15
+  };
+
+  public static spriteImage: { [key: string]: string } = {
+    loader: 'assets/sprites/blue_ball.png',
+    attacker: 'assets/sprites/xenon2_ship.png',
+    miner: 'assets/sprites/bsquadron3.png',
+    builder: 'assets/sprites/asteroids_ship.png',
+    defender: 'assets/sprites/bsquadron2.png'
   };
 
 }

@@ -16,15 +16,17 @@ export class EntitytileComponent implements OnInit {
   public tileClick: EventEmitter<string> = new EventEmitter<string>();
   constructor() { }
 
-  count: number = 1;
+  count: number = 0;
   kind: string = '';
   cost: number = 5;
   level: number = 1;
+  image: string;
 
   ngOnInit(): void {
     console.log('InitTile:', this.entityKind);
     this.cost = GameConstants.entityCost[this.entityKind];
     this.kind = this.entityKind;
+    this.image = GameConstants.spriteImage[this.entityKind];
   }
 
   newEntity(): void {
