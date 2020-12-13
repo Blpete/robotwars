@@ -12,6 +12,7 @@ export class ControlsComponent implements OnInit {
 
   constructor(public gameService: GameboardService) { }
 
+  base = 1;
   loaderEnable = false;
   attackerEnable = false;
   minerEnable = false;

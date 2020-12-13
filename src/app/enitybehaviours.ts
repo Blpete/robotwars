@@ -1,6 +1,7 @@
 import { EntityClass, EntityType } from './gameTypes';
 import Phaser from 'phaser';
 import { GameboardService } from './gameboard.service';
+import { GameConstants } from './gameconstants';
 
 export class EntityBehaviors {
 
@@ -23,6 +24,7 @@ export class EntityBehaviors {
                 const x = value.baseloc.x;
                 const y = value.baseloc.y;
                 angle = Phaser.Math.Angle.Between(value.sprite.x, value.sprite.y, x, y);
+
                 gs.physics.moveTo(value.sprite, x, y, value.speed);
             } else {
                 //   console.log('miner to ore');

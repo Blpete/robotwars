@@ -106,7 +106,13 @@ export class GameboardService extends Phaser.Scene {
     entity.displayWidth = GameConstants.entitySize;
     entity.setBounce(0);
     entity.setCollideWorldBounds(true);
-    entity.setData('health', 100);
+
+    const health = GameConstants.entityHealth[kind]; 
+    entity.setData('health', health);
+
+    const capacity = GameConstants.entityCapacity[kind]; 
+    entity.setData('capacity', capacity);
+    
 
     const angle = Phaser.Math.Between(-Math.PI, Math.PI);
     this.physics.velocityFromRotation(angle, 10, entity.body.velocity);
@@ -117,30 +123,33 @@ export class GameboardService extends Phaser.Scene {
     obj.sprite = entity;
     obj.angle = Math.random() * 360;
     obj.distance = Math.random() * 150;
+    const speed = GameConstants.entitySpeed[kind];
+    obj.speed=speed;
 
     obj.baseloc = { x: base.sprite.x, y: base.sprite.y };
     this.sprites.push(obj);
 
+    const cost = GameConstants.entityCost[kind];
+    this.score.energy = this.score.energy - cost;
+
+
     if (kind === EntityType.Miner) {
       this.miners.add(entity);
-      this.score.energy = this.score.energy - 20;
-    }
+     }
     if (kind === EntityType.Loader) {
       this.loaders.add(entity);
-      this.score.energy = this.score.energy - 5;
     }
     if (kind === EntityType.Attacker) {
       this.attackers.add(entity);
-      this.score.energy = this.score.energy - 10;
-    }
+     }
     if (kind === EntityType.Builder) {
       this.builders.add(entity);
-      this.score.energy = this.score.energy - 40;
-    }
+     }
     if (kind === EntityType.Defender) {
       this.defenders.add(entity);
-      this.score.energy = this.score.energy - 20;
     }
+
+    console.log('created entity', entity);
     this.updateScore();
   }
 
@@ -389,32 +398,7 @@ export class GameboardService extends Phaser.Scene {
       this.miners,
       this.orePool,
       this.miner_ore_collider
-      // function (miner: any, chest): void {
-      //   console.log('miner ore collision', miner, chest);
-      //   miner.body.velocity.x = 0;
-      //   miner.body.velocity.y = 0;
-      //   // chest.destroy();
-      //   miner.setData('orepayload', 50);
-      //   //  self.emitter0.setPostion( miner.body.x, miner.body.y);
-      //   // self.emitter0.y = miner.body.y;
-      //   // self.emitter0.startFollow(miner);
-      //   // self.emitter0.active = true;
-      //   //self.emitter0.emitParticleAt(miner.body.x, miner.body.y, 10);
-      //   self.emitter0.killAll();
-      //   self.emitter0.setPosition(miner.body.x, miner.body.y);
-      //   self.emitter0.explode();
-      //   // self.emitter0.explode(10, miner.body.x, miner.body.y);
 
-      //   let remaining = chest.getData('ore_count');
-      //   remaining = remaining - 50;
-      //   if (remaining < 1) {
-      //     chest.destroy();
-      //   } else {
-      //     chest.setData('ore_count', remaining);
-      //     chest.body.velocity.x = 0;
-      //     chest.body.velocity.y = 0;
-      //   }
-      // }
     );
 
     this.physics.add.collider(
@@ -424,10 +408,11 @@ export class GameboardService extends Phaser.Scene {
         console.log('loader energy  collision', miner, chest);
         miner.body.velocity.x = 0;
         miner.body.velocity.y = 0;
+        const capacity = miner.getData('capacity');
         // chest.destroy();
-        miner.setData('energy_payload', 50);
+        miner.setData('energy_payload', capacity);
         let remaining = chest.getData('energy_count');
-        remaining = remaining - 50;
+        remaining = remaining - capacity;
         if (remaining < 1) {
           chest.destroy();
         } else {
@@ -533,6 +518,7 @@ export class GameboardService extends Phaser.Scene {
     this.load.image('spark0', 'assets/particles/blue.png');
     this.load.image('spark1', 'assets/particles/red.png');
 
+    console.log('done preload method');
     // plugin example
     // const url = 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexpinchplugin.min.js';
     // this.load.plugin('rexpinchplugin', url, true);
@@ -594,23 +580,20 @@ export class GameboardService extends Phaser.Scene {
 
 
   public miner_ore_collider(miner: any, chest): void {
-    console.log('miner ore collision', miner, chest);
+    const capacity = miner.getData('capacity');
+    console.log('miner ore collision', miner, chest, capacity);
     miner.body.velocity.x = 0;
     miner.body.velocity.y = 0;
-    // chest.destroy();
-    miner.setData('orepayload', 50);
-    //  self.emitter0.setPostion( miner.body.x, miner.body.y);
-    // self.emitter0.y = miner.body.y;
-    // self.emitter0.startFollow(miner);
-    // self.emitter0.active = true;
-    //self.emitter0.emitParticleAt(miner.body.x, miner.body.y, 10);
+
+    miner.setData('orepayload', capacity);
+
     miner.scene.emitter0.killAll();
     miner.scene.emitter0.setPosition(miner.body.x, miner.body.y);
     miner.scene.emitter0.explode();
-    // self.emitter0.explode(10, miner.body.x, miner.body.y);
+
 
     let remaining = chest.getData('ore_count');
-    remaining = remaining - 50;
+    remaining = remaining - capacity;
     if (remaining < 1) {
       chest.destroy();
     } else {

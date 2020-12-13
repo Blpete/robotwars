@@ -8,7 +8,7 @@
 </div> -->
 
 <div class="controlpanel">
-    <label class='base'>Base 1</label>
+    <label class='base'>Base {{base}}</label>
     <app-entitytile class='tile' entityKind="loader"  [disabled]="!loaderEnable" (tileClick)="newLoader()"></app-entitytile>
     <app-entitytile class='tile' entityKind="defender" [disabled]="!defenderEnable" (tileClick)="newDefender()"></app-entitytile>
     <app-entitytile class='tile'  entityKind="attacker" [disabled]="!attackerEnable" (tileClick)="newAttacker()" ></app-entitytile>
