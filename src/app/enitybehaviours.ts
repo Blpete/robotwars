@@ -74,7 +74,7 @@ export class EntityBehaviors {
             if (closest) {
                 const distance = Phaser.Math.Distance.Between(value.sprite.x, value.sprite.y, closest.x, closest.y);
                 if (distance < 300) {
-                    // todo set angle
+                    // set angle
                     angle = Phaser.Math.Angle.Between(value.sprite.x, value.sprite.y, closest.x, closest.y);
                     gs.physics.accelerateTo(value.sprite, closest.x, closest.y, 10, 30, 30);
                     value.sprite.rotation = angle + Math.PI / 2.0;

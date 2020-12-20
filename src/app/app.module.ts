@@ -9,6 +9,9 @@ import { GameboardService } from './gameboard.service';
 import { PhaserModule } from 'phaser-component-library';
 import { HomepageComponent } from './homepage/homepage.component';
 import { EntitytileComponent } from './entitytile/entitytile.component';
+import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
+
+const config: SocketIoConfig = { url: 'http://localhost:3000', options: {} };
 
 @NgModule({
   declarations: [
@@ -21,6 +24,7 @@ import { EntitytileComponent } from './entitytile/entitytile.component';
   imports: [
     PhaserModule,
     BrowserModule,
+    SocketIoModule.forRoot(config),
     AppRoutingModule
   ],
   providers: [GameboardService],

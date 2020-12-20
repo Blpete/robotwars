@@ -31,6 +31,7 @@ export class GameboardService extends Phaser.Scene {
   private sourceMarker: any;
   // map: any;
   private sprites: EntityClass[] = [];
+  private audio_sprite : any;
 
   // groups
   chests;
@@ -224,6 +225,7 @@ export class GameboardService extends Phaser.Scene {
 
   public create(): void {
     console.log('SCENE Create');
+    this.audio_sprite = this.sound.addAudioSprite('blaster');
 
     // SPACE
     //  World size is 8000 x 6000
@@ -391,6 +393,7 @@ export class GameboardService extends Phaser.Scene {
         self.score.score = self.score.score + 10;
         self.updateScore();
         enemy.destroy();
+        this.audio_sprite.play('death');
         console.log('colision', self.score);
       });
 
@@ -409,8 +412,10 @@ export class GameboardService extends Phaser.Scene {
         miner.body.velocity.x = 0;
         miner.body.velocity.y = 0;
         const capacity = miner.getData('capacity');
-        // chest.destroy();
         miner.setData('energy_payload', capacity);
+
+        self.audio_sprite.play('ping');
+
         let remaining = chest.getData('energy_count');
         remaining = remaining - capacity;
         if (remaining < 1) {
@@ -522,6 +527,14 @@ export class GameboardService extends Phaser.Scene {
     // plugin example
     // const url = 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexpinchplugin.min.js';
     // this.load.plugin('rexpinchplugin', url, true);
+
+    
+  //  this.load.audio('blaster','assets/SoundEffects/fx_mixdown.json');
+    this.load.audioSprite('blaster', 'assets/SoundEffects/fx_mixdown.json', [
+      'assets/SoundEffects/fx_mixdown.ogg',
+      'assets/SoundEffects/fx_mixdown.mp3'
+    ])
+   
   }
 
   public update(time, delta): void {
@@ -550,6 +563,7 @@ export class GameboardService extends Phaser.Scene {
         if (this.baseManager.hightlightBase({ x: worldPoint.x, y: worldPoint.y })) {
           //
           // todo test
+          this.audio_sprite.play('escape');
           const closeTarget: any = this.physics.closest(this.baseManager.getCurrentBase().sprite, this.enemyWave.getChildren());
           if (closeTarget) {
             this.shootBullet(this.baseManager.getCurrentBase().sprite, closeTarget);
@@ -590,6 +604,7 @@ export class GameboardService extends Phaser.Scene {
     miner.scene.emitter0.killAll();
     miner.scene.emitter0.setPosition(miner.body.x, miner.body.y);
     miner.scene.emitter0.explode();
+
 
 
     let remaining = chest.getData('ore_count');
