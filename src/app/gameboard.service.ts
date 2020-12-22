@@ -403,6 +403,7 @@ export class GameboardService extends Phaser.Scene {
       this.miner_ore_collider
 
     );
+    
 
     this.physics.add.collider(
       this.loaders,
