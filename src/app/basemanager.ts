@@ -42,7 +42,7 @@ export class BaseManager {
         for (let i = 0; i < this.bases.length; i++) {
             this.bases[i].sprite.setTexture('base');
 
-            if (Phaser.Math.Distance.Between(this.bases[i].location.x, this.bases[i].location.y, loc.x, loc.y) < 10) {
+            if (Phaser.Math.Distance.Between(this.bases[i].location.x, this.bases[i].location.y, loc.x, loc.y) < 30) {
                 this.currentbase = i;
                 this.bases[i].sprite.setTexture('base-highlight');
                 ishighlight = true;

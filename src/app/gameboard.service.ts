@@ -238,9 +238,10 @@ export class GameboardService extends Phaser.Scene {
     // Graphic to show the "source" of the copy operation
     const tilewidth = 16;
     const tileheight = 16;
-    this.sourceMarker = this.add.graphics({ lineStyle: { width: 5, color: 0xffffff, alpha: 1 } });
+    this.sourceMarker = this.physics.add.sprite(0,0,'cursor');
+    //this.sourceMarker = this.physics.add.graphics({ lineStyle: { width: 5, color: 0xffffff, alpha: 1 } });
     // this.sourceMarker.strokeRect(0, 0, 1 * this.map.tileWidth, 1 * this.map.tileHeight);
-    this.sourceMarker.strokeRect(0, 0, 1 * tilewidth, 1 * tileheight);
+    //this.sourceMarker.strokeRect(0, 0, 1 * tilewidth, 1 * tileheight);
 
     // todo this.cameras.main.startFollow(this.sourceMarker);
 
@@ -403,7 +404,7 @@ export class GameboardService extends Phaser.Scene {
       this.miner_ore_collider
 
     );
-    
+
 
     this.physics.add.collider(
       this.loaders,
@@ -464,6 +465,22 @@ export class GameboardService extends Phaser.Scene {
         chest.body.velocity.y = 0;
       });
 
+      this.physics.add.collider(
+        this.sourceMarker,
+        this.basegroup,
+        function (cursor:any, base): void {
+           console.log('collision cursor/base', cursor, base);
+           const coor:Coordinate={x:cursor.x, y: cursor.y};
+            cursor.scene.baseManager.hightlightBase(coor);
+        });
+
+        this.physics.add.collider(
+          this.sourceMarker,
+          this.chests,
+          function (cursor, chest): void {
+             console.log('collision cursor/chest', cursor, chest);
+              
+          });
 
     // emitters
     this.emitter0 = this.add.particles('spark0').createEmitter({
@@ -511,6 +528,8 @@ export class GameboardService extends Phaser.Scene {
     this.load.image('chest', 'assets/sprites/carrot.png');
     this.load.image('bullet', 'assets/sprites/bullets/bullet7.png');
     this.load.image('badguy', 'assets/sprites/ship.png');
+
+    this.load.image('cursor', 'assets/sprites/asteroids_ship.png');
 
     // space
     this.load.image('background', 'assets/space/nebula.jpg');
