@@ -33,6 +33,8 @@ export class GameboardService extends Phaser.Scene {
   private sprites: EntityClass[] = [];
   private audio_sprite : any;
 
+  asteroid;
+
   // groups
   chests;
   miners;
@@ -75,7 +77,8 @@ export class GameboardService extends Phaser.Scene {
   }
   public updateScore(): void {
     this.scoreUpdate.emit(this.score);
-    // todo add sound effect
+   //todo 
+    this.audio_sprite.play('ping');
   }
 
   public pauseGame(): void {
@@ -243,7 +246,7 @@ export class GameboardService extends Phaser.Scene {
     // this.sourceMarker.strokeRect(0, 0, 1 * this.map.tileWidth, 1 * this.map.tileHeight);
     //this.sourceMarker.strokeRect(0, 0, 1 * tilewidth, 1 * tileheight);
 
-    // todo this.cameras.main.startFollow(this.sourceMarker);
+    //this.cameras.main.startFollow(this.sourceMarker);
 
     // // Graphic to show the "destination" of the copy operation
     // this.destinationMarker = this.add.graphics({ lineStyle: { width: 5, color: 0x000000, alpha: 1 } });
@@ -508,6 +511,12 @@ export class GameboardService extends Phaser.Scene {
       on: false
     });
 
+    this.asteroid = this.physics.add.image(225, 550, 'asteroid').setScale(0.03);
+    this.asteroid.x = 100;
+    this.asteroid.y = 100;
+    this.asteroid.visible = true;
+  
+
     // initial score
     this.updateScore();
   }
@@ -542,6 +551,9 @@ export class GameboardService extends Phaser.Scene {
     // particles
     this.load.image('spark0', 'assets/particles/blue.png');
     this.load.image('spark1', 'assets/particles/red.png');
+
+    this.load.image('astroid1', 'assets/space/asteroid1.png');
+
 
     console.log('done preload method');
     // plugin example
@@ -592,8 +604,6 @@ export class GameboardService extends Phaser.Scene {
           this.emitter0.explode(); //(worldPoint.x, worldPoint.y);
           }
         } else {
-          // todo
-          //  this.emitter1.killAll();
 
           this.emitter1.setPosition(worldPoint.x, worldPoint.y);
           this.emitter1.emitParticleAt(worldPoint.x, worldPoint.y);

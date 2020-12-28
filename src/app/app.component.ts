@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { GameboardService } from './gameboard.service';
 import Phaser from 'phaser';
 // import PhaserHealth from 'PhaserHealth';
@@ -9,7 +9,7 @@ import { GameConstants } from './gameconstants';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'RobotWars';
   public readonly phaser = Phaser;
   public gameRunning = false;
@@ -67,6 +67,25 @@ export class AppComponent {
     console.log('exitGame-app', event);
     this.game.destroy(true, false);
     this.gameRunning = false;
+  }
+
+  public ngOnInit() {
+    this.resize();
+  }
+
+
+  resize() {
+      var canvas = this.game.canvas, width = window.innerWidth, height = window.innerHeight;
+      var wratio = width / height, ratio = canvas.width / canvas.height;
+  
+      if (wratio < ratio) {
+          canvas.style.width = width + "px";
+          canvas.style.height = (width / ratio) + "px";
+      } else {
+          canvas.style.width = (height * ratio) + "px";
+          canvas.style.height = height + "px";
+      }
+      console.log('resize:', canvas.style.width, canvas.style.height)
   }
 
 }
