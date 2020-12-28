@@ -26,14 +26,14 @@ export class AppComponent {
     type: Phaser.AUTO,
     width: window.innerWidth,
     height: window.innerHeight,
-    //  height: GameConstants.height,
-    //  width: GameConstants.width,
+   // height: 1280,
+  //  width: 690,
     backgroundColor: '#2d2d2d',
     //  scene: [MainScene],
     //  parent: 'gameContainer',
     scale: {
-      mode: Phaser.Scale.FIT,
-      autoCenter: Phaser.Scale.CENTER_BOTH,
+      mode: Phaser.Scale.WIDTH_CONTROLS_HEIGHT,
+      autoCenter: Phaser.Scale.CENTER_HORIZONTALLY,
     },
     physics: {
       default: 'arcade',
@@ -41,7 +41,16 @@ export class AppComponent {
       }
     },
   };
-  public constructor(public gameService: GameboardService) { }
+  public constructor(public gameService: GameboardService) {
+
+    window.addEventListener('resize', () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      console.log('resize window', width, height);
+      this.game.scale.resize(width, height);
+      this.gameService.cameras.main.setViewport(0, 0, width, height);
+    });
+  }
 
   public onGameReady(game: Phaser.Game): void {
     console.log('onGameReady', this.gameService, game);
