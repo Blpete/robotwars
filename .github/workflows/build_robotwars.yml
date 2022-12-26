@@ -1,4 +1,4 @@
-name: Build Angular Project
+name: Build Robotwars Angular Project
 
 on:
   push:
