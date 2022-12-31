@@ -119,6 +119,10 @@
           }
         }
       }
-    }},
-  "defaultProject": "robotwars"
+    }
+  },
+  "defaultProject": "robotwars",
+  "cli": {
+    "analytics": false
+  }
 }
