@@ -1,16 +1,15 @@
-<div class="homepage" *ngIf="showHomepage">
-
-   
-   <br />
-   <br />
-   <button class="btn" (click)="newGame()">New Game</button>
-   <br />   <br />
-   <button class="btn" (click)="moreInfo()">More Info...</button>
-   <br />   <br />
-   <button class="btn" (click)="loadGame()">Load Existing Game</button>
-   <br />   <br />
-   <button class="btn" (click)="Options()">Options...</button>
-   <br />   <br />
-
-</div>
+@if (showHomepage) {
+  <div class="homepage">
+    <br />
+    <br />
+    <button class="btn" (click)="newGame()">New Game</button>
+    <br />   <br />
+    <button class="btn" (click)="moreInfo()">More Info...</button>
+    <br />   <br />
+    <button class="btn" (click)="loadGame()">Load Existing Game</button>
+    <br />   <br />
+    <button class="btn" (click)="options()">Options...</button>
+    <br />   <br />
+  </div>
+}
 

@@ -1,12 +1,14 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
 import { Loader } from 'phaser';
 import { GameConstants } from '../gameconstants';
 import { EntityType } from '../gameTypes';
 
 @Component({
-  selector: 'app-entitytile',
-  templateUrl: './entitytile.component.html',
-  styleUrls: ['./entitytile.component.css']
+    selector: 'app-entitytile',
+    templateUrl: './entitytile.component.html',
+    styleUrls: ['./entitytile.component.css'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class EntitytileComponent implements OnInit {
 

@@ -1,12 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { GameboardService } from '../gameboard.service';
 import { EntityType, Score } from '../gameTypes';
 
 
 @Component({
-  selector: 'app-controls',
-  templateUrl: './controls.component.html',
-  styleUrls: ['./controls.component.css']
+    selector: 'app-controls',
+    templateUrl: './controls.component.html',
+    styleUrls: ['./controls.component.css'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class ControlsComponent implements OnInit {
 

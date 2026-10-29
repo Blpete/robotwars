@@ -271,7 +271,7 @@ export class GameboardService extends Phaser.Scene {
       fontSize: 32,
       padding: { x: 10, y: 5 },
       backgroundColor: '#000000',
-      fill: '#ffffff'
+      color: '#ffffff'
     });
     zoomout.setScrollFactor(0);
     zoomout.setInteractive().on('pointerdown', () => this.zoom_out());
@@ -280,7 +280,7 @@ export class GameboardService extends Phaser.Scene {
       fontSize: 32,
       padding: { x: 10, y: 5 },
       backgroundColor: '#000000',
-      fill: '#ffffff'
+      color: '#ffffff'
     });
     zoomin.setScrollFactor(0);
     zoomin.setInteractive().on('pointerdown', () => this.zoom_in());
@@ -367,7 +367,7 @@ export class GameboardService extends Phaser.Scene {
     this.physics.add.collider(
       this.bulletPool,
       this.enemyWave,
-      function(bullet, enemy): void {
+      function(bullet: any, enemy: any): void {
         //  console.log('colision', ball, crate);
         bullet.destroy();
         self.score.score = self.score.score + 10;
@@ -379,7 +379,7 @@ export class GameboardService extends Phaser.Scene {
     this.physics.add.collider(
       this.attackers,
       this.enemyWave,
-      function(attacker, enemy): void {
+      function(attacker: any, enemy: any): void {
         //  console.log('colision', ball, crate);
         attacker.destroy();
         self.score.score = self.score.score + 10;
@@ -391,7 +391,7 @@ export class GameboardService extends Phaser.Scene {
     this.physics.add.collider(
       this.defenders,
       this.enemyWave,
-      function(defender, enemy): void {
+      function(defender: any, enemy: any): void {
         //  console.log('colision', ball, crate);
         defender.destroy();
         self.score.score = self.score.score + 10;
@@ -412,7 +412,7 @@ export class GameboardService extends Phaser.Scene {
     this.physics.add.collider(
       this.loaders,
       this.energyPool,
-      function(miner, chest): void {
+      function(miner: any, chest: any): void {
         console.log('loader energy  collision', miner, chest);
         miner.body.velocity.x = 0;
         miner.body.velocity.y = 0;
@@ -436,7 +436,7 @@ export class GameboardService extends Phaser.Scene {
     this.physics.add.collider(
       this.miners,
       this.basegroup,
-      function(miner, chest): void {
+      function(miner: any, chest: any): void {
         console.log('miner base collision', miner, chest);
         miner.body.velocity.x = 0;
         miner.body.velocity.y = 0;
@@ -454,7 +454,7 @@ export class GameboardService extends Phaser.Scene {
     this.physics.add.collider(
       this.loaders,
       this.basegroup,
-      function(loader, chest): void {
+      function(loader: any, chest: any): void {
         console.log('loader base collision', loader, chest);
         loader.body.velocity.x = 0;
         loader.body.velocity.y = 0;
@@ -471,7 +471,7 @@ export class GameboardService extends Phaser.Scene {
     this.physics.add.collider(
       this.sourceMarker,
       this.basegroup,
-      function(cursor: any, base): void {
+      function(cursor: any, base: any): void {
         console.log('collision cursor/base', cursor, base);
         const coor: Coordinate = { x: cursor.x, y: cursor.y };
         cursor.scene.baseManager.hightlightBase(coor);
@@ -480,15 +480,14 @@ export class GameboardService extends Phaser.Scene {
     this.physics.add.collider(
       this.sourceMarker,
       this.chests,
-      function(cursor, chest): void {
+      function(cursor: any, chest: any): void {
         console.log('collision cursor/chest', cursor, chest);
 
       });
 
     // emitters
-    this.emitter0 = this.add.particles('spark0').createEmitter({
-      x: 400,
-      y: 300,
+    // Phaser 3.60 removed ParticleEmitterManager. Each call creates one emitter.
+    this.emitter0 = this.add.particles(400, 300, 'spark0', {
       speed: { min: -100, max: 100 },
       angle: { min: 0, max: 360 },
       scale: { start: 0.5, end: 0 },
@@ -496,10 +495,10 @@ export class GameboardService extends Phaser.Scene {
       //  active: false,
       lifespan: 600,
       gravityY: 800,
-      on: false
+      emitting: false
     });
 
-    this.emitter1 = this.add.particles('spark1').createEmitter({
+    this.emitter1 = this.add.particles(0, 0, 'spark1', {
       speed: { min: -800, max: 809 },
       angle: { min: 0, max: 360 },
       scale: { start: 0.3, end: 0 },
@@ -508,7 +507,7 @@ export class GameboardService extends Phaser.Scene {
       // active: false,
       lifespan: 300,
       gravityY: 100,
-      on: false
+      emitting: false
     });
 
     this.asteroid = this.physics.add.image(225, 550, 'asteroid').setScale(0.03);
@@ -529,12 +528,10 @@ export class GameboardService extends Phaser.Scene {
       scale: -0.5,
       tint: 0x0066ff00
   }); */
-  var particles = this.add.particles('explosion');
-
   //  Setting { min: x, max: y } will pick a random value between min and max
   //  Setting { start: x, end: y } will ease between start and end
-
-  particles.createEmitter({
+  const explosionEmitters = [
+    this.add.particles(0, 0, 'explosion', {
       frame: [ 'smoke-puff', 'cloud', 'smoke-puff' ],
       angle: { min: 240, max: 300 },
       speed: { min: 200, max: 300 },
@@ -542,20 +539,18 @@ export class GameboardService extends Phaser.Scene {
       lifespan: 2000,
       alpha: { start: 1, end: 0 },
       scale: { start: 1.5, end: 0.5 },
-      on: false
-  });
-
-  particles.createEmitter({
+      emitting: false
+    }),
+    this.add.particles(0, 0, 'explosion', {
       frame: 'red',
       angle: { start: 0, end: 360, steps: 32 },
       lifespan: 1000,
       speed: 400,
       quantity: 32,
       scale: { start: 0.3, end: 0 },
-      on: false
-  });
-
-  particles.createEmitter({
+      emitting: false
+    }),
+    this.add.particles(0, 0, 'explosion', {
       frame: 'stone',
       angle: { min: 240, max: 300 },
       speed: { min: 400, max: 600 },
@@ -565,21 +560,19 @@ export class GameboardService extends Phaser.Scene {
       scale: { min: 0.05, max: 0.4 },
       rotate: { start: 0, end: 360, ease: 'Back.easeOut' },
       gravityY: 800,
-      on: false
-  });
-
-  particles.createEmitter({
+      emitting: false
+    }),
+    this.add.particles(0, 0, 'explosion', {
       frame: 'muzzleflash2',
       lifespan: 200,
       scale: { start: 2, end: 0 },
       rotate: { start: 0, end: 180 },
-      on: false
-  });
+      emitting: false
+    })
+  ];
 
-  this.input.on('pointerdown', function (pointer) {
-
-      particles.emitParticleAt(pointer.x, pointer.y);
-
+  this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      explosionEmitters.forEach((emitter) => emitter.emitParticleAt(pointer.x, pointer.y));
   });
     // initial score
     this.updateScore();
@@ -690,7 +683,7 @@ export class GameboardService extends Phaser.Scene {
   }
 
 
-  public miner_ore_collider(miner: any, chest): void {
+  public miner_ore_collider(miner: any, chest: any): void {
     const capacity = miner.getData('capacity');
     console.log('miner ore collision', miner, chest, capacity);
     miner.body.velocity.x = 0;
