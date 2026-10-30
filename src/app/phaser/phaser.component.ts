@@ -50,8 +50,11 @@ export class PhaserComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (this.game && typeof this.game.destroy === 'function') {
-      this.game.destroy(true);
+    // Sole owner of Phaser.Game.destroy. AppComponent only drops its reference.
+    const game = this.game;
+    this.game = null;
+    if (game && typeof game.destroy === 'function') {
+      game.destroy(true);
     }
   }
 }

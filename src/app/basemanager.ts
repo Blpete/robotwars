@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GameboardService } from './gameboard.service';
+import { RobotWarsScene } from './gameboard.service';
 import { GameConstants } from './gameconstants';
 import { Base, Coordinate } from './gameTypes';
 
@@ -15,7 +15,7 @@ export class BaseManager {
     }
 
 
-    public addBase(id: number, loc: Coordinate, gs: GameboardService): Base {
+    public addBase(id: number, loc: Coordinate, gs: RobotWarsScene): Base {
         console.log('addBase', id, loc);
         //  bases
         const base: Base = new Base();

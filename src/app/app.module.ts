@@ -5,7 +5,6 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ControlsComponent } from './controls/controls.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
-import { GameboardService } from './gameboard.service';
 import { PhaserModule } from './phaser/phaser.module';
 import { HomepageComponent } from './homepage/homepage.component';
 import { EntitytileComponent } from './entitytile/entitytile.component';
@@ -24,7 +23,7 @@ import { EntitytileComponent } from './entitytile/entitytile.component';
     BrowserModule,
     AppRoutingModule
   ],
-  providers: [GameboardService],
+  providers: [],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

@@ -1,22 +1,74 @@
-import { EventEmitter, Injectable, Output } from '@angular/core';
-import Phaser, { LEFT } from 'phaser';
+import { EventEmitter, Injectable } from '@angular/core';
+import Phaser from 'phaser';
 import { BaseManager } from './basemanager';
 import { EntityBehaviors } from './enitybehaviours';
 import { GameConstants } from './gameconstants';
 import { Coordinate, EntityClass, EntityType, Score } from './gameTypes';
-
-// var Health = PhaserHealth;
+import { applyDamage, BULLET_DAMAGE, canAfford, ENEMY_ATTACK, nearestPoint } from './gamerules';
 
 const SCENE_KEY = 'Scene';
 
+/**
+ * Angular-facing session. A new RobotWarsScene is created for every match so
+ * Exit then New Game does not reuse a Scene whose Phaser systems were destroyed.
+ */
 @Injectable({
   providedIn: 'root'
 })
+export class GameboardService {
+  public homeVisible = true;
+  private readonly scoreUpdate = new EventEmitter<Score>();
+  private scene: RobotWarsScene | null = null;
 
-export class GameboardService extends Phaser.Scene {
+  public begin(game: Phaser.Game): void {
+    this.scene = new RobotWarsScene(this.scoreUpdate);
+    game.scene.add(SCENE_KEY, this.scene, true);
+  }
 
-  @Output()
-  public scoreUpdate: EventEmitter<Score> = new EventEmitter<Score>();
+  public end(): void {
+    this.scene = null;
+  }
+
+  public getScoreEmitter(): EventEmitter<Score> {
+    return this.scoreUpdate;
+  }
+
+  public getScore(): Score {
+    return this.scene ? this.scene.score : new Score();
+  }
+
+  public getFrameRate(): number {
+    return this.scene ? this.scene.getFrameRate() : 0;
+  }
+
+  public newResource(kind: EntityType): void {
+    if (this.scene) {
+      this.scene.newResource(kind);
+    }
+  }
+
+  public pauseGame(): void {
+    if (this.scene) {
+      this.scene.pauseGame();
+    }
+  }
+
+  public resumeGame(): void {
+    if (this.scene) {
+      this.scene.resumeGame();
+    }
+  }
+
+  public resizeViewport(width: number, height: number): void {
+    const camera = this.scene && this.scene.cameras && this.scene.cameras.main;
+    if (camera) {
+      camera.setViewport(0, 0, width, height);
+    }
+  }
+}
+
+export class RobotWarsScene extends Phaser.Scene {
+  private readonly scoreUpdate: EventEmitter<Score>;
 
   public homeVisible = true;
   baseManager: BaseManager;
@@ -64,21 +116,20 @@ export class GameboardService extends Phaser.Scene {
   BULLET_SPEED = 500; // pixels/second
   NUMBER_OF_BULLETS = 30;
 
-  constructor() {
+  constructor(scoreUpdate: EventEmitter<Score>) {
     super({ key: SCENE_KEY });
+    this.scoreUpdate = scoreUpdate;
     this.currentLoc = { x: 0, y: 10 };
     this.frameCount = 0;
     this.baseManager = new BaseManager();
     this.score = new Score();
   }
 
-  public getScoreEmitter(): EventEmitter<Score> {
-    return this.scoreUpdate;
-  }
   public updateScore(): void {
     this.scoreUpdate.emit(this.score);
-    // todo
-    this.audio_sprite.play('ping');
+    if (this.audio_sprite) {
+      this.audio_sprite.play('ping');
+    }
   }
 
   public pauseGame(): void {
@@ -96,7 +147,13 @@ export class GameboardService extends Phaser.Scene {
   }
 
   public newResource(kind: EntityType): void {
+    const baseReady = this.baseManager.getCurrentBase();
+    const cost = GameConstants.entityCost[kind];
+    if (!baseReady || !canAfford(this.score.energy, kind) || typeof cost !== 'number') {
+      return;
+    }
 
+    this.score.energy = this.score.energy - cost;
     this.score.robotCount++;
     this.updateScore();
 
@@ -113,6 +170,7 @@ export class GameboardService extends Phaser.Scene {
 
     const health = GameConstants.entityHealth[kind];
     entity.setData('health', health);
+    entity.setData('attack', GameConstants.entityAttack[kind] ?? 0);
 
     const capacity = GameConstants.entityCapacity[kind];
     entity.setData('capacity', capacity);
@@ -132,10 +190,6 @@ export class GameboardService extends Phaser.Scene {
 
     obj.baseloc = { x: base.sprite.x, y: base.sprite.y };
     this.sprites.push(obj);
-
-    const cost = GameConstants.entityCost[kind];
-    this.score.energy = this.score.energy - cost;
-
 
     if (kind === EntityType.Miner) {
       this.miners.add(entity);
@@ -191,30 +245,52 @@ export class GameboardService extends Phaser.Scene {
     // If there aren't any bullets available then don't shoot
     if (bullet === null || bullet === undefined) { return; }
 
-    // Revive the bullet
-    // This makes the bullet "alive"
-    // bullet.revive();
-
-    // Bullets should kill themselves when they leave the world.
-    // Phaser takes care of this for me by setting this flag
-    // but you can do it yourself by killing the bullet if
-    // its x,y coordinates are outside of the world.
-    bullet.checkWorldBounds = true;
-    bullet.outOfBoundsKill = true;
-
-    // Set the bullet position to the gun position
-    bullet.x = source.x;
-    bullet.y = source.y;
-
     bullet.setActive(true);
     bullet.setVisible(true);
+    bullet.setPosition(source.x, source.y);
+    bullet.setData('isBullet', true);
+    bullet.setData('attack', BULLET_DAMAGE);
+    if (bullet.body) {
+      bullet.body.enable = true;
+      bullet.body.reset(source.x, source.y);
+      bullet.setCollideWorldBounds(true);
+      bullet.body.onWorldBounds = true;
+    }
 
     let angle = 0.0;
     angle = Phaser.Math.Angle.Between(source.x, source.y, target.x, target.y);
-    //  console.log('Angle:', angle);
 
-    // Shoot it
     this.physics.velocityFromRotation(angle, this.BULLET_SPEED, bullet.body.velocity);
+  }
+
+  /** Return a live bullet to the pool instead of destroying it. */
+  private releaseBullet(bullet: any): void {
+    if (!bullet || !bullet.active) {
+      return;
+    }
+    if (bullet.body) {
+      bullet.body.stop();
+      bullet.body.enable = false;
+    }
+    this.bulletPool.killAndHide(bullet);
+  }
+
+  /** Apply table damage. Returns true when the target is destroyed. */
+  private hurt(target: any, amount: number, scoreOnKill: boolean): boolean {
+    if (!target || !target.active) {
+      return false;
+    }
+    const result = applyDamage(target.getData('health') ?? 0, amount);
+    target.setData('health', result.health);
+    if (!result.destroyed) {
+      return false;
+    }
+    target.destroy();
+    if (scoreOnKill) {
+      this.score.score = this.score.score + 10;
+      this.updateScore();
+    }
+    return true;
   }
 
 
@@ -306,13 +382,7 @@ export class GameboardService extends Phaser.Scene {
 
     const rect = new Phaser.Geom.Rectangle(0, 0, GameConstants.worldWidth, GameConstants.worldHeight);
 
-    //  create chests
-    this.chests = this.physics.add.group({ key: 'chest', frameQuantity: 100 });
-    Phaser.Actions.RandomRectangle(this.chests.getChildren(), rect);
-    this.chests.getChildren().forEach(element => {
-      element.displayWidth = GameConstants.entitySize;
-      element.displayHeight = GameConstants.entitySize;
-    });
+    // Chests have no pickup rule anywhere in the scene, so they are not spawned.
 
     //  create ore
     this.orePool = this.physics.add.group({ key: 'ore', frameQuantity: 100 });
@@ -342,12 +412,16 @@ export class GameboardService extends Phaser.Scene {
     // enemy wave
     this.enemyWave = this.physics.add.group({ key: 'badguy', frameQuantity: 10 });
     Phaser.Actions.RandomRectangle(this.enemyWave.getChildren(), rect);
+    const basePoints = this.baseManager.bases.map(base => base.location);
     this.enemyWave.getChildren().forEach(element => {
       element.displayWidth = GameConstants.entitySize;
       element.displayHeight = GameConstants.entitySize;
-      // todo get closest base;
-      this.physics.moveTo(element, 350, 180, 30);
+      const target = nearestPoint({ x: element.x, y: element.y }, basePoints);
+      if (target) {
+        this.physics.moveTo(element, target.x, target.y, 30);
+      }
       element.setData('health', 1000);
+      element.setData('attack', ENEMY_ATTACK);
     });
 
 
@@ -363,44 +437,43 @@ export class GameboardService extends Phaser.Scene {
       this.bulletPool.killAndHide(bullet);
     }
 
-    const self = this;
+    this.physics.world.on('worldbounds', (body: Phaser.Physics.Arcade.Body) => {
+      const obj: any = body.gameObject;
+      if (obj && obj.getData && obj.getData('isBullet')) {
+        this.releaseBullet(obj);
+      }
+    });
+
     this.physics.add.collider(
       this.bulletPool,
       this.enemyWave,
-      function(bullet: any, enemy: any): void {
-        //  console.log('colision', ball, crate);
-        bullet.destroy();
-        self.score.score = self.score.score + 10;
-        self.updateScore();
-        enemy.destroy();
-        console.log('colision', self.score);
+      (bullet: any, enemy: any) => {
+        this.hurt(enemy, bullet.getData('attack') ?? BULLET_DAMAGE, true);
+        this.releaseBullet(bullet);
       });
 
     this.physics.add.collider(
       this.attackers,
       this.enemyWave,
-      function(attacker: any, enemy: any): void {
-        //  console.log('colision', ball, crate);
-        attacker.destroy();
-        self.score.score = self.score.score + 10;
-        self.updateScore();
-        enemy.destroy();
-        console.log('colision', self.score);
+      (attacker: any, enemy: any) => {
+        const enemyAttack = enemy.getData('attack') ?? 0;
+        this.hurt(enemy, GameConstants.entityAttack[EntityType.Attacker], true);
+        this.hurt(attacker, enemyAttack, false);
       });
 
     this.physics.add.collider(
       this.defenders,
       this.enemyWave,
-      function(defender: any, enemy: any): void {
-        //  console.log('colision', ball, crate);
-        defender.destroy();
-        self.score.score = self.score.score + 10;
-        self.updateScore();
-        enemy.destroy();
-        this.audio_sprite.play('death');
-        console.log('colision', self.score);
+      (defender: any, enemy: any) => {
+        const enemyAttack = enemy.getData('attack') ?? 0;
+        const killed = this.hurt(enemy, GameConstants.entityAttack[EntityType.Defender], true);
+        this.hurt(defender, enemyAttack, false);
+        if (killed && this.audio_sprite) {
+          this.audio_sprite.play('death');
+        }
       });
 
+    const self = this;
     this.physics.add.collider(
       this.miners,
       this.orePool,
@@ -477,14 +550,6 @@ export class GameboardService extends Phaser.Scene {
         cursor.scene.baseManager.hightlightBase(coor);
       });
 
-    this.physics.add.collider(
-      this.sourceMarker,
-      this.chests,
-      function(cursor: any, chest: any): void {
-        console.log('collision cursor/chest', cursor, chest);
-
-      });
-
     // emitters
     // Phaser 3.60 removed ParticleEmitterManager. Each call creates one emitter.
     this.emitter0 = this.add.particles(400, 300, 'spark0', {
@@ -510,7 +575,7 @@ export class GameboardService extends Phaser.Scene {
       emitting: false
     });
 
-    this.asteroid = this.physics.add.image(225, 550, 'asteroid').setScale(0.03);
+    this.asteroid = this.physics.add.image(225, 550, 'astroid1').setScale(0.03);
     this.asteroid.x = 100;
     this.asteroid.y = 100;
     this.asteroid.visible = true;
@@ -591,7 +656,6 @@ export class GameboardService extends Phaser.Scene {
     this.load.image('miner', 'assets/sprites/bsquadron3.png');
     this.load.image('loader', 'assets/sprites/blue_ball.png');
     this.load.image('base-highlight', 'assets/sprites/blockBNM.png');
-    this.load.image('chest', 'assets/sprites/carrot.png');
     this.load.image('bullet', 'assets/sprites/bullets/bullet7.png');
     this.load.image('badguy', 'assets/sprites/ship.png');
 

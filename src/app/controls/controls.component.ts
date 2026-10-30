@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { GameboardService } from '../gameboard.service';
+import { canAfford } from '../gamerules';
 import { EntityType, Score } from '../gameTypes';
 
 
@@ -54,31 +55,10 @@ export class ControlsComponent implements OnInit {
   }
 
   public scoreUpdated(score: Score): void {
-    console.log('scoreUpdate:', score);
-    if (score.energy >= 5) {
-      this.loaderEnable = true;
-    } else {
-      this.loaderEnable = false;
-    }
-    if (score.energy >= 20) {
-      this.minerEnable = true;
-    } else {
-      this.minerEnable = false;
-    }
-    if (score.energy >= 10) {
-      this.attackerEnable = true;
-    } else {
-      this.attackerEnable = false;
-    }
-    if (score.energy >= 20) {
-      this.defenderEnable = true;
-    } else {
-      this.defenderEnable = false;
-    }
-    if (score.energy >= 40) {
-      this.builderEnable = true;
-    } else {
-      this.builderEnable = false;
-    }
+    this.loaderEnable = canAfford(score.energy, EntityType.Loader);
+    this.minerEnable = canAfford(score.energy, EntityType.Miner);
+    this.attackerEnable = canAfford(score.energy, EntityType.Attacker);
+    this.defenderEnable = canAfford(score.energy, EntityType.Defender);
+    this.builderEnable = canAfford(score.energy, EntityType.Builder);
   }
 }
