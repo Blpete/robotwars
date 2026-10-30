@@ -1,8 +1,6 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { GameboardService } from './gameboard.service';
 import Phaser from 'phaser';
-// import PhaserHealth from 'PhaserHealth';
-import { GameConstants } from './gameconstants';
 
 @Component({
     selector: 'app-root',
@@ -11,11 +9,12 @@ import { GameConstants } from './gameconstants';
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
   title = 'RobotWars';
   public readonly phaser = Phaser;
   public gameRunning = false;
-  private game: Phaser.Game;
+  private game: Phaser.Game | null = null;
+  private readonly onResize = () => this.resize();
 
   // public readonly config = {
   //   type: Phaser.AUTO,
@@ -44,16 +43,12 @@ export class AppComponent implements OnInit {
     },
   };
   public constructor(public gameService: GameboardService) {
-
-    window.addEventListener('resize', () => {
-      this.resize();
-    });
+    window.addEventListener('resize', this.onResize);
   }
 
   public onGameReady(game: Phaser.Game): void {
-    console.log('onGameReady', this.gameService, game);
     this.game = game;
-    game.scene.add('Scene', this.gameService, true);
+    this.gameService.begin(game);
     this.resize();
   }
 
@@ -64,7 +59,9 @@ export class AppComponent implements OnInit {
 
   public exitGame(event): void {
     console.log('exitGame-app', event);
-    this.game.destroy(true, false);
+    // PhaserComponent.ngOnDestroy is the only place that destroys the Game.
+    this.gameService.end();
+    this.game = null;
     this.gameRunning = false;
   }
 
@@ -72,15 +69,18 @@ export class AppComponent implements OnInit {
 
   }
 
+  public ngOnDestroy(): void {
+    window.removeEventListener('resize', this.onResize);
+  }
+
   public resize(): void {
-    console.log('resize-app', this.game);
+    if (!this.game) {
+      return;
+    }
     const width = window.innerWidth;
     const height = window.innerHeight;
-    console.log('resize window', width, height);
-    // this.game.scale.resize(width, height);
     this.game.scale.resize(width, height);
-
-    this.gameService.cameras.main.setViewport(0, 0, width, height);
+    this.gameService.resizeViewport(width, height);
   }
 
 

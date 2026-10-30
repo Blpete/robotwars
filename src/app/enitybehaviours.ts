@@ -1,12 +1,12 @@
 import { EntityClass, EntityType } from './gameTypes';
 import Phaser from 'phaser';
-import { GameboardService } from './gameboard.service';
+import { RobotWarsScene } from './gameboard.service';
 import { GameConstants } from './gameconstants';
 
 export class EntityBehaviors {
 
 
-    public static updateEntity(value: EntityClass, gs: GameboardService): EntityClass {
+    public static updateEntity(value: EntityClass, gs: RobotWarsScene): EntityClass {
         if (value.entityKind === EntityType.Defender) {
             // orbit
             value.sprite.setPosition(value.baseloc.x, value.baseloc.y);

@@ -13,5 +13,5 @@
     <app-entitytile class='tile' entityKind="defender" [disabled]="!defenderEnable" (tileClick)="newDefender()"></app-entitytile>
     <app-entitytile class='tile'  entityKind="attacker" [disabled]="!attackerEnable" (tileClick)="newAttacker()" ></app-entitytile>
     <app-entitytile class='tile'  entityKind="miner"  [disabled]="!minerEnable" (tileClick)="newMiner()"></app-entitytile>
-    <app-entitytile class='tile'  entityKind="builder"  [disabled]="!builderEnable" (tileClick)="newBuilder()"></app-entitytile>
+    <!-- Builder stays hidden: the scene never defines a structure for it to build. -->
 </div>
