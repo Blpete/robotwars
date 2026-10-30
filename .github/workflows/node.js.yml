@@ -28,4 +28,4 @@ jobs:
         cache: 'npm'
     - run: npm ci
     - run: npx ng build --configuration production
-    - run: npm test -- --watch=false --browsers=ChromeHeadlessNoSandbox
+    - run: npm test -- --watch=false

@@ -1,16 +1,19 @@
-// This file is required by karma.conf.js and loads recursively all the .spec and framework files
-
+// Loaded before the unit tests. The Angular unit-test builder initializes
+// the TestBed environment. This file patches Zone.js and gives jsdom enough of
+// a canvas for Phaser's startup feature checks.
 import 'zone.js/testing';
-import { getTestBed } from '@angular/core/testing';
-import {
-  BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting
-} from '@angular/platform-browser-dynamic/testing';
 
-// First, initialize the Angular testing environment.
-getTestBed().initTestEnvironment(
-  BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting(), {
-    teardown: { destroyAfterEach: false }
+const context2d = {
+  fillStyle: '',
+  globalCompositeOperation: 'source-over',
+  fillRect(): void {},
+  drawImage(): void {},
+  getImageData(): ImageData {
+    return { data: new Uint8ClampedArray(4) } as ImageData;
+  },
+  putImageData(): void {},
+};
+
+if (typeof HTMLCanvasElement !== 'undefined') {
+  HTMLCanvasElement.prototype.getContext = (() => context2d) as unknown as typeof HTMLCanvasElement.prototype.getContext;
 }
-);
